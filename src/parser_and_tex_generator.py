@@ -35,7 +35,7 @@ class ParserAndTexGenerator:
         self.preamble = read_preamble()
         self.write_preamble_and_header_to_file()
         self.write_metadata_to_file()
-        self.parse_lines_and_bars()
+        self.generate_table()
         self.tmp_file.write("\n\\end{document}")
 
     def get_metadata(self):
@@ -79,12 +79,14 @@ class ParserAndTexGenerator:
             case num:
                 return f" Capo: {num}\\textsuperscript{{th}} fret"
 
-    def parse_lines_and_bars(self):
+    def generate_table(self):
+        self.tmp_file.write("\\newline \\centering \\large \\begin{tabular}{c c c c c c c c c} \n")
         for line in self.input_text:
             line = line.strip()
             elements = []
             match line[0]:
                 case "(":
+                    continue
                     time_signature = list(int(n) for n in line[1:line.find(")")].split("/"))
                     elements = [f"\\frac{{{time_signature[0]}}}{{{time_signature[1]}}}"]
                 case "[" | "|":
@@ -92,6 +94,6 @@ class ParserAndTexGenerator:
                     for i in range(len(elements)):
                         if elements[i][0] != "\\":
                             elements[i] = "\\bartable" + "".join(f"{{{chord}}}" for chord in elements[i].split("_"))
-            print(" & ".join(elements) + " \\\\")
-
+            self.tmp_file.write(" & ".join(elements) + " \\\\ \n")
+        self.tmp_file.write("\\end{tabular} \n")
 

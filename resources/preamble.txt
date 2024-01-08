@@ -1,11 +1,11 @@
-\documentclass{article}
+\documentclass[a4paper, 12pt]{article}
 \usepackage{leadsheets}
 \usepackage{calc}
 \usepackage{multicol}
 \usepackage{multirow}
 
 \newcommand{\bartable}[4]{%
-    \begin{tabular}{p{\widthof{-----}} p{\widthof{-----}} p{\widthof{-----}} p{\widthof{-----}}}
+    \begin{tabular}{p{\widthof{------}} p{\widthof{------}} p{\widthof{------}} p{\widthof{------}}}
     \writechord{#1} & \writechord{#2} & \writechord{#3} & \writechord{#4}
     \end{tabular}
 }
@@ -14,3 +14,4 @@
 \usepackage{geometry}
 
 \geometry{top=0.5cm, bottom=0.5cm, left=0.5cm, right=0.5cm}
+\begin{document}
