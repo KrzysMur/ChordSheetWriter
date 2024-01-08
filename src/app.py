@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 import os
 from saving import SaveWindow, save_project
 from opening import OpenProjectWindow
-from parser import Parser
+from parser_and_tex_generator import ParserAndTexGenerator
 
 
 class App:
@@ -48,9 +48,12 @@ class App:
 
 if __name__ == '__main__':
     with open("../example_inputs/project.chordsheet") as file:
-        input_parser = Parser([line.strip() for line in file.readlines()])
-        print(input_parser.metadata)
+        input_content = [line.strip() for line in file.readlines()]
+        input_parser = ParserAndTexGenerator(input_content)
+        input_parser.tmp_file.seek(0)
+        with open("../tutorial.tex", "w") as tex_file:
+            tex_file.writelines(input_parser.tmp_file.readlines())
 
-   # app = App()
-  #  app.run()
+    input_parser.tmp_file.close()
+
 
