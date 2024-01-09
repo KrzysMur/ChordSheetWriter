@@ -3,6 +3,7 @@ import os
 from saving import SaveWindow, save_project
 from opening import OpenProjectWindow
 from parser_and_tex_generator import ParserAndTexGenerator
+from input_parser import InputParser
 
 
 class App:
@@ -48,12 +49,10 @@ class App:
 
 if __name__ == '__main__':
     with open("../example_inputs/project.chordsheet") as file:
-        input_content = [line.strip() for line in file.readlines()]
-        input_parser = ParserAndTexGenerator(input_content)
-        input_parser.tmp_file.seek(0)
+        input_content = [line.strip() for line in file.readlines() if line != "\n"]
+        parser = InputParser(input_content)
+        metadata, metadata_ending_index = parser.get_metadata(return_metadate_ending_index=True)
+        parser.parse_song(metadata_ending_index)
         with open("../tutorial.tex", "w") as tex_file:
-            tex_file.writelines(input_parser.tmp_file.readlines())
-
-    input_parser.tmp_file.close()
-
+            pass
 
