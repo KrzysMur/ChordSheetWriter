@@ -10,16 +10,15 @@ class InputParser:
         i = 0
         while "=" in self.input[i]:
             key, value = self.input[i].split("=")
-            metadata.update({key.strip(): value.strip()})
+            metadata.update({key.strip().lower(): value.strip()})
             i += 1
+        if "chords" in metadata:
+            metadata.update({"chords": parse_chords(metadata["chords"])})
         return (fill_in_metadata(metadata), i) if return_metadate_ending_index else fill_in_metadata(metadata)
 
-    def parse_song(self, song_starting_index):
+    def parse_song(self, song_starting_index=0):
         song_lines = [self.input[i] for i in range(song_starting_index, len(self.input))]
-        lines = []
-        for line in song_lines:
-            line_object = parse_line(line)
-            print(line_object)
+        return [parse_line(line) for line in song_lines]
 
 
 def fill_in_metadata(metadata):
@@ -29,6 +28,9 @@ def fill_in_metadata(metadata):
             metadata.update({key: "N/A"})
     return metadata
 
+
+def parse_chords(chords):
+    return [chord.strip() for chord in chords.split(",")]
 
 def parse_line(line):
     if line[0] == "(":
@@ -49,8 +51,6 @@ def parse_line(line):
             else:
                 elements.append(BarChords(line_elements[i]))
         return elements
-
-
 
 
 def is_barline(char: str):

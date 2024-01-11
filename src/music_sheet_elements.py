@@ -24,3 +24,6 @@ class TimeSignature:
     def __init__(self, top_number, bottom_number):
         self.top_number = top_number
         self.bottom_number = bottom_number
+
+    def get_tex_code(self):
+        return f"\\frac{{{self.top_number}}}{{{self.bottom_number}}}"
