@@ -22,7 +22,6 @@ class App:
         return column
 
     def run(self):
-
         while True:
             event, values = self.window.read()
 
@@ -44,13 +43,11 @@ if __name__ == '__main__':
         input_content = [line.strip() for line in file.readlines() if line != "\n"]
 
     parser = InputParser(input_content)
-    metadata, metadata_ending_index = parser.get_metadata(return_metadate_ending_index=True)
-    parsed_song = parser.parse_song(metadata_ending_index)
+    metadata, parsed_song = parser.parse()
 
     tex_generator = TexGenerator(metadata, parsed_song)
     tex_generator.generate_temp_tex_file()
 
-    print(tex_generator.song)
 
     with open("../tutorial.tex", "w") as tex_file:
         tex_file.write(tex_generator.tmp_file.read())

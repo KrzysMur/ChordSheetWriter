@@ -2,6 +2,8 @@
 \usepackage{leadsheets}
 \setlength{\tabcolsep}{1pt}
 \usepackage{geometry}
-\geometry{top=0.5cm, bottom=1cm, left=1cm, right=2cm}
+\geometry{top=0.5cm, bottom=1cm, left=1cm, right=1cm}
 \usepackage{tabularx}
-
+\newcolumntype{C}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\centering\arraybackslash}p{0.3cm}}
+\renewcommand{\arraystretch}{1.5}

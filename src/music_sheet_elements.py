@@ -7,17 +7,22 @@ class BarLine:
     def get_tex_code(self):
         match self.symbol:
             case "[":
-                return "\\leftrepreat"
+                return "\\leftrepeat"
             case "]":
                 return "\\rightrepeat"
             case "|":
                 return "\\normalbar"
+            case "][":
+                return "\\leftrightrepeat"
 
 
 class BarChords:
     def __init__(self, _input):
         self.text = _input
         self.chords = self.text.split("_")
+
+    def get_tex_code(self):
+        return " & ".join([f"\\writechord{{{chord.replace("#", "\\#")}}}" for chord in self.chords])
 
 
 class TimeSignature:
@@ -26,4 +31,4 @@ class TimeSignature:
         self.bottom_number = bottom_number
 
     def get_tex_code(self):
-        return f"\\frac{{{self.top_number}}}{{{self.bottom_number}}}"
+        return f"$ \\frac{{{self.top_number}}}{{{self.bottom_number}}} $ "
