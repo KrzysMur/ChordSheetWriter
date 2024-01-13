@@ -44,12 +44,13 @@ class TexGenerator:
         self.tmp_file.write("\\end{tabularx}\n\n")
 
     def get_column_types(self, max_column_index):
+        bar_width = self.get_bar_width()
         columns = []
         for element in self.song[max_column_index]:
             if isinstance(element, BarChords):
-                columns += ["C"]*len(element.chords)
+                columns += [f"p{{{bar_width}cm}}"]
             else:
-                columns += ["B"]
+                columns += ["L"]
         return " ".join(columns)
 
     def get_max_columns_per_line(self):
@@ -66,6 +67,21 @@ class TexGenerator:
                 max_columns = cols
                 index = i
         return max_columns, index
+
+    def get_bar_width(self):
+        bars = self.get_max_bars_per_line()
+        return (19 - .3*(bars+2)) / bars
+
+    def get_max_bars_per_line(self):
+        max_bars = 0
+        for line in self.song:
+            line_count = 0
+            for element in line:
+                if isinstance(element, BarChords):
+                    line_count += 1
+            if line_count > max_bars:
+                max_bars = line_count
+        return max_bars
 
     def write_preamble_to_file(self):
         with open("../resources/preamble.txt") as file:
