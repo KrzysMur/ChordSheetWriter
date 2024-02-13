@@ -21,8 +21,19 @@ class BarChords:
         self.text = _input
         self.chords = self.text.split("_")
 
-    def get_tex_code(self):
-        return " & ".join([f"\\writechord{{{chord.replace("#", "\\#")}}}" for chord in self.chords])
+    def get_tex_code(self, bar_width):
+        chords = [chord.replace("#", "\\sharp ")
+                  for chord in self.chords]
+
+        chord_width = round(bar_width / len(chords), 2)
+
+        col_types = " ".join([f"p{{{chord_width}cm}}"
+                              for _ in range(len(chords))])
+
+        bar_content = " & ".join([f" \\writechord{{{chord}}}"
+                                  for chord in chords])
+
+        return f"\\begin{{tabular}}[t]{{{col_types}}} {bar_content}  \\end{{tabular}} \n"
 
 
 class TimeSignature:
@@ -32,3 +43,5 @@ class TimeSignature:
 
     def get_tex_code(self):
         return f"$ \\frac{{{self.top_number}}}{{{self.bottom_number}}} $ "
+
+#  \begin{tabular}{p{1.43cm} p{1.43cm} p{1.43cm}} \writechord{C(\sharp5)} & \writechord{} & \writechord{Ebm7}  \end{tabular}

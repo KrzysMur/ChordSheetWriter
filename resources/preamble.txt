@@ -2,9 +2,12 @@
 \usepackage{leadsheets}
 \setlength{\tabcolsep}{1pt}
 \usepackage{geometry}
+\usepackage{graphicx}
 \geometry{top=0.5cm, bottom=1cm, left=1cm, right=1cm}
 \usepackage{tabularx}
-\newcolumntype{B}{>{\raggedright\arraybackslash}X}
-\newcolumntype{L}{>{\centering\arraybackslash}p{0.3cm}}
-\renewcommand{\arraystretch}{1.5}
+\newcolumntype{L}{>{\centering\arraybackslash}p{0.5cm}}
+\renewcommand{\arraystretch}{3}
+
+\usepackage{helvet}
+\renewcommand{\rmdefault}{\sfdefault}
 

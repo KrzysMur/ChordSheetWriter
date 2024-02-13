@@ -31,12 +31,21 @@ class TexGenerator:
     def write_table_line_to_file(self, line):
         time_signature = False
         elements_tex_codes = []
+
         for element in line:
+
             if isinstance(element, TimeSignature):
                 time_signature = True
-            elements_tex_codes.append(element.get_tex_code())
+
+            if isinstance(element, BarChords):
+                elements_tex_codes.append(element.get_tex_code(self.get_bar_width()))
+
+            else:
+                elements_tex_codes.append(element.get_tex_code())
+
         if time_signature:
             self.tmp_file.write(" & ".join(elements_tex_codes) + " \\\\ \n")
+
         else:
             self.tmp_file.write(" & " + " & ".join(elements_tex_codes) + " \\\\ \n")
 
@@ -48,9 +57,9 @@ class TexGenerator:
         columns = []
         for element in self.song[max_column_index]:
             if isinstance(element, BarChords):
-                columns += [f"p{{{bar_width}cm}}"]
+                columns.append(f"p{{{bar_width}cm}}")
             else:
-                columns += ["L"]
+                columns.append("L")
         return " ".join(columns)
 
     def get_max_columns_per_line(self):
@@ -70,7 +79,7 @@ class TexGenerator:
 
     def get_bar_width(self):
         bars = self.get_max_bars_per_line()
-        return (19 - .3*(bars+2)) / bars
+        return (19 - .5*(bars+2)) / bars
 
     def get_max_bars_per_line(self):
         max_bars = 0
@@ -99,7 +108,7 @@ class TexGenerator:
 
         if self.metadata.get("chords") != "N/A":
             self.tmp_file.write(
-                f"\\hfill Chords: {'\\hspace{0.2cm} '.join(['\\writechord{' + chord.replace("#", "\\#") + '}' 
+                f"\\hfill Chords: {'\\hspace{0.2cm} '.join(['\\writechord{' + chord + '}' 
                                                             for chord in self.metadata.get('chords')])} \\hfill")
 
         if self.metadata.get("capo") != "N/A":
@@ -108,7 +117,7 @@ class TexGenerator:
         if self.metadata.get("tempo") != "N/A":
             self.tmp_file.write(" \\hfill Tempo: " + self.metadata.get("tempo"))
 
-        self.tmp_file.write("\\newline\\rule{\\linewidth}{0.3pt}\\newline \n\n")
+        self.tmp_file.write("\\newline\\rule{\\linewidth}{0.3pt}\\newline \\large \\bfseries \n\n")
 
     def begin_document(self):
         self.tmp_file.write("\\begin{document} \n")

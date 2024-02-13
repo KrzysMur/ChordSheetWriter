@@ -1,11 +1,20 @@
 
 title=Mountain Time
-author=Joe Bonamassa
-album=So, it`s Like That
+author=Joe Bonamssa
+album=Out of Time
 key=E
-tempo=137
-chords=E, D, Bm, C#m, B, A, E/G#
-capo = 2
+tempo=102
+chords=E, D, Bm, C#m, A, E/G#, B
+capo = 1
 
-(4/4) [E__D_|E__D_][E__D_|A__E/G##_A]
-[B___|A__E/G#_]
+(4/4) [E_D|E_D|E_D|Bm_C#m_D_Bm]
+[B|A_E/G#|B|A_E/G#]
+[E_D|E_D|E_D|Bm_C#m_D_Bm]
+[B|A_E/G#]
+[B|A_E/G#|B|A_E/G#]
+[E_D|E_D|E_D|Bm_C#m_D_Bm]
+|E|Bm|E|Bm_C#m_D_Bm|
+[E_D|E_D|E_D|Bm_C#m_D_Bm]
+[E_D|E_D|E_D|Bm_C#m_D_Bm]
+[E_D|E_D|E_D|Bm_C#m_D_Bm]
+[E_D|E_D|E_D|Bm_C#m_D_Bm]
