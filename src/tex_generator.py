@@ -29,6 +29,7 @@ class TexGenerator:
             self.write_table_line_to_file(line)
 
     def write_table_line_to_file(self, line):
+        # TODO: simplify code
         time_signature = False
         elements_tex_codes = []
 
@@ -42,6 +43,7 @@ class TexGenerator:
 
             else:
                 elements_tex_codes.append(element.get_tex_code())
+
 
         if time_signature:
             self.tmp_file.write(" & ".join(elements_tex_codes) + " \\\\ \n")
@@ -79,7 +81,7 @@ class TexGenerator:
 
     def get_bar_width(self):
         bars = self.get_max_bars_per_line()
-        return (19 - .5*(bars+2)) / bars
+        return (19 - .625*(bars+2)) / bars
 
     def get_max_bars_per_line(self):
         max_bars = 0

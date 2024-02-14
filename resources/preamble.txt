@@ -3,6 +3,9 @@
 \setlength{\tabcolsep}{1pt}
 \usepackage{geometry}
 \usepackage{graphicx}
+\usepackage{array}
+\usepackage{adjustbox}
+
 \geometry{top=0.5cm, bottom=1cm, left=1cm, right=1cm}
 \usepackage{tabularx}
 \newcolumntype{L}{>{\centering\arraybackslash}p{0.5cm}}

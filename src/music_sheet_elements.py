@@ -30,7 +30,7 @@ class BarChords:
         col_types = " ".join([f"p{{{chord_width}cm}}"
                               for _ in range(len(chords))])
 
-        bar_content = " & ".join([f" \\writechord{{{chord}}}"
+        bar_content = " & ".join([f" \\adjustbox{{max width={chord_width}cm}}{{\\writechord{{{chord}}}}}"
                                   for chord in chords])
 
         return f"\\begin{{tabular}}[t]{{{col_types}}} {bar_content}  \\end{{tabular}} \n"
@@ -44,4 +44,3 @@ class TimeSignature:
     def get_tex_code(self):
         return f"$ \\frac{{{self.top_number}}}{{{self.bottom_number}}} $ "
 
-#  \begin{tabular}{p{1.43cm} p{1.43cm} p{1.43cm}} \writechord{C(\sharp5)} & \writechord{} & \writechord{Ebm7}  \end{tabular}
