@@ -1,6 +1,12 @@
 # PyCharm
 .idea/
 
+# Tex auto-gen
+
+*.synctex.gz
+*.pdf
+*.tex
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

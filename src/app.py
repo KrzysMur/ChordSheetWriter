@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import os
 from tex_generator import TexGenerator
 from input_parser import InputParser
+from config_provider import config
 
 
 class App:
@@ -39,6 +40,7 @@ class App:
 
 
 if __name__ == '__main__':
+
     with open("../example_inputs/project.chordsheet") as file:
         input_content = [line.strip() for line in file.readlines() if line != "\n"]
 
@@ -47,7 +49,6 @@ if __name__ == '__main__':
 
     tex_generator = TexGenerator(metadata, parsed_song)
     tex_generator.generate_temp_tex_file()
-
 
     with open("../tutorial.tex", "w") as tex_file:
         tex_file.write(tex_generator.tmp_file.read())

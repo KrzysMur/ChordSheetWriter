@@ -8,11 +8,8 @@
 \usepackage{adjustbox}
 \usepackage{tabularx}
 
-\geometry{top=0.5cm, bottom=1cm, left=1.5cm, right=1cm}
-
 \setlength{\tabcolsep}{1pt}
 
-\renewcommand{\arraystretch}{3}
 \renewcommand{\rmdefault}{\sfdefault}
 \newcolumntype{L}{>{\centering\arraybackslash}p{0.5cm}}
 

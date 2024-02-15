@@ -1,6 +1,6 @@
 import tempfile
 from music_sheet_elements import *
-
+from config_provider import config
 
 class TexGenerator:
     def __init__(self, metadata: dict, song: list[list]):
@@ -11,11 +11,15 @@ class TexGenerator:
     def generate_temp_tex_file(self):
         self.write_preamble_to_file()
         self.begin_document()
+
         self.write_title_and_author()
         self.write_metadata()
+
         self.centering()
         self.begin_table()
+
         self.generate_table_content()
+
         self.end_table()
         self.end_document()
         self.tmp_file.seek(0)
@@ -73,7 +77,13 @@ class TexGenerator:
 
     def get_bar_width(self):
         bars = self.get_max_bars_per_line()
-        return (18.5 - .625*(bars+2)) / bars
+
+        space = (float(config.get("page", "page_width"))
+                 - float(config.get("page", "left_margin"))
+                 - float(config.get("page", "right_margin")))
+
+        return (space - float(config.get("page", "bar_line_width_cooficient")) *
+                float(config.get("page", "bar_line_width"))*(bars+2)) / bars
 
     def get_max_bars_per_line(self):
         max_bars = 0
@@ -91,6 +101,13 @@ class TexGenerator:
             lines = file.readlines()
         for line in lines:
             self.tmp_file.write(line)
+
+        self.tmp_file.write(f"\\renewcommand{{\\arraystretch}}{{{config.get("page", "line_spacing")}}}\n")
+
+        self.tmp_file.write(f"\\geometry{{top={config.get('page', 'top_margin')}cm, "
+                            f"bottom={config.get('page', 'bottom_margin')}cm, "
+                            f"left={config.get('page', 'left_margin')}cm, "
+                            f"right={config.get('page', 'right_margin')}cm}}\n\n\n")
 
     def write_title_and_author(self):
         self.tmp_file.write(
