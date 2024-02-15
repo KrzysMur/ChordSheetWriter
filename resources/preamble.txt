@@ -1,16 +1,18 @@
 \documentclass[a4paper, 12pt]{article}
+
 \usepackage{leadsheets}
-\setlength{\tabcolsep}{1pt}
+\usepackage{helvet}
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{array}
 \usepackage{adjustbox}
-
-\geometry{top=0.5cm, bottom=1cm, left=1cm, right=1cm}
 \usepackage{tabularx}
-\newcolumntype{L}{>{\centering\arraybackslash}p{0.5cm}}
-\renewcommand{\arraystretch}{3}
 
-\usepackage{helvet}
+\geometry{top=0.5cm, bottom=1cm, left=1.5cm, right=1cm}
+
+\setlength{\tabcolsep}{1pt}
+
+\renewcommand{\arraystretch}{3}
 \renewcommand{\rmdefault}{\sfdefault}
+\newcolumntype{L}{>{\centering\arraybackslash}p{0.5cm}}
 
