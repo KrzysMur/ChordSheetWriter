@@ -3,6 +3,8 @@ import os
 from tex_generator import TexGenerator
 from input_parser import InputParser
 from config_provider import config
+import subprocess
+from pdflatex import PDFLaTeX
 
 
 class App:
@@ -40,8 +42,9 @@ class App:
 
 
 if __name__ == '__main__':
+    project_name = "project1"
 
-    with open("../example_inputs/project.chordsheet") as file:
+    with open(f"../example_inputs/{project_name}.chordsheet") as file:
         input_content = [line.strip() for line in file.readlines() if line != "\n"]
 
     parser = InputParser(input_content)
@@ -50,6 +53,13 @@ if __name__ == '__main__':
     tex_generator = TexGenerator(metadata, parsed_song)
     tex_generator.generate_temp_tex_file()
 
-    with open("../tutorial.tex", "w") as tex_file:
+    with open(f"../{project_name}.tex", "w") as tex_file:
         tex_file.write(tex_generator.tmp_file.read())
+
+    os.chdir("../")
+    os.system(f"pdflatex {project_name}.tex")
+    os.system(f"del {project_name}.aux")
+    os.system(f"del {project_name}.tex")
+    os.system(f"del {project_name}.log")
+
 

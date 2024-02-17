@@ -2,6 +2,7 @@ import tempfile
 from music_sheet_elements import *
 from config_provider import config
 
+
 class TexGenerator:
     def __init__(self, metadata: dict, song: list[list]):
         self.tmp_file = tempfile.NamedTemporaryFile("a+t")
