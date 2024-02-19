@@ -26,6 +26,7 @@ class InputParser:
         return metadata, song
 
 
+
 def fill_in_metadata(metadata):
     keys = ["title", "author", "album", "key", "tempo", "chords", "capo"]
     for key in keys:
@@ -40,6 +41,7 @@ def parse_chords(chords):
 
 def parse_line(line):
     time_signature = []
+
     if line[0] == "(":
         time_sig_end = line.find(")")
         numerator, denominator = line[1:time_sig_end].split("/")
@@ -52,7 +54,6 @@ def parse_line(line):
             line_elements[-1] += char
         else:
             line_elements.append(char)
-
     elements = []
     for i in range(len(line_elements)):
         if i % 2 == 0:

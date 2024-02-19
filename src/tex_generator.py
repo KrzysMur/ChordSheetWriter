@@ -10,20 +10,26 @@ class TexGenerator:
         self.song = song
 
     def generate_temp_tex_file(self):
-        self.write_preamble_to_file()
-        self.begin_document()
+        try:
+            self.write_preamble_to_file()
+            self.begin_document()
 
-        self.write_title_and_author()
-        self.write_metadata()
+            self.write_title_and_author()
+            self.write_metadata()
 
-        self.centering()
-        self.begin_table()
+            self.centering()
+            self.begin_table()
 
-        self.generate_table_content()
+            self.generate_table_content()
 
-        self.end_table()
-        self.end_document()
-        self.tmp_file.seek(0)
+            self.end_table()
+            self.end_document()
+            self.tmp_file.seek(0)
+
+            return True
+
+        except Exception:
+            return False
 
     def begin_table(self):
         columns_number, index = self.get_max_columns_per_line()

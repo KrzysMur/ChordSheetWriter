@@ -14,12 +14,23 @@ def create_separator():
     return separator
 
 
+def show_error_message(text="ERROR"):
+    msg = QMessageBox()
+    msg.setWindowTitle("ERROR")
+    msg.setText(text)
+    msg.setIcon(QMessageBox.Icon.Information)
+    msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msg.exec()
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.project_name = "unnamedproject"
+
         self.setWindowTitle("ChordSheetWriter")
-        self.setMinimumSize(300, 350)
+        self.setMinimumSize(int(config.get("gui", "main_window_width")), int(config.get("gui", "main_window_height")))
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -36,7 +47,11 @@ class MainWindow(QMainWindow):
         self.save_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.save_button)
 
-        self.start_button = QPushButton(QIcon("../resources/icons/start.png"), "", self)
+        self.load_button = QPushButton(QIcon("../resources/icons/load.png"), "", self)
+        self.load_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.load_button)
+
+        self.start_button = QPushButton(QIcon("../resources/icons/start.png"), "", self, clicked=self.generate_pdf)
         self.start_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.start_button)
 
@@ -63,32 +78,31 @@ class MainWindow(QMainWindow):
 
         self.show()
 
+    def generate_pdf(self):
+        input_content = [line for line in self.text_input.toPlainText().splitlines() if line != "" and line[0] not in "#%$"]
+
+        parser = InputParser(input_content)
+        metadata, parsed_song = parser.parse()
+        tex_generator = TexGenerator(metadata, parsed_song)
+        success = tex_generator.generate_temp_tex_file()
+
+        if success:
+            with open(f"../{self.project_name}.tex", "w") as tex_file:
+                tex_file.write(tex_generator.tmp_file.read())
+
+            os.chdir("../")
+            error_code = os.system(f"pdflatex {self.project_name}.tex")
+            print(error_code)
+            os.system(f"del {self.project_name}.aux")
+            os.system(f"del {self.project_name}.tex")
+            os.system(f"del {self.project_name}.log")
+            os.chdir("src/")
+        else:
+            show_error_message("Invalid syntax. Unable to generate pdf")
 
 
 if __name__ == '__main__':
 
-    project_name = "project1"
-
     app = QApplication(sys.argv)
     main_window = MainWindow()
     sys.exit(app.exec())
-
-    with open(f"../example_inputs/{project_name}.chordsheet") as file:
-        input_content = [line.strip() for line in file.readlines() if line != "\n"]
-
-    parser = InputParser(input_content)
-    metadata, parsed_song = parser.parse()
-
-    tex_generator = TexGenerator(metadata, parsed_song)
-    tex_generator.generate_temp_tex_file()
-
-    with open(f"../{project_name}.tex", "w") as tex_file:
-        tex_file.write(tex_generator.tmp_file.read())
-
-    os.chdir("../")
-    os.system(f"pdflatex {project_name}.tex")
-    os.system(f"del {project_name}.aux")
-    os.system(f"del {project_name}.tex")
-    os.system(f"del {project_name}.log")
-
-
