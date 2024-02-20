@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 from tex_generator import TexGenerator
 from input_parser import InputParser
 from config_provider import config
@@ -21,6 +22,12 @@ def show_error_message(text="ERROR"):
     msg.setIcon(QMessageBox.Icon.Information)
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
+
+
+def validate_tex_syntax(tex_file_path):
+    command = "lacheck " + tex_file_path
+    result = subprocess.getoutput(command)
+    return result
 
 
 class MainWindow(QMainWindow):
@@ -80,25 +87,44 @@ class MainWindow(QMainWindow):
 
     def generate_pdf(self):
         input_content = [line for line in self.text_input.toPlainText().splitlines() if line != "" and line[0] not in "#%$"]
+        print("Read input")
 
         parser = InputParser(input_content)
-        metadata, parsed_song = parser.parse()
+        print("Parser initialized")
+
+        try:
+            metadata, parsed_song = parser.parse()
+        except Exception:
+            print("Can't parse input")
+            show_error_message("Invalid syntax. Unable to compile")
+            return
+        else:
+            print("Input parsed")
+
         tex_generator = TexGenerator(metadata, parsed_song)
-        success = tex_generator.generate_temp_tex_file()
+        print("Tex generator initialilzed")
 
-        if success:
-            with open(f"../{self.project_name}.tex", "w") as tex_file:
-                tex_file.write(tex_generator.tmp_file.read())
+        parse_and_tex_generation_success = tex_generator.generate_temp_tex_file()
+        print("Temporary file generated")
 
-            os.chdir("../")
-            error_code = os.system(f"pdflatex {self.project_name}.tex")
-            print(error_code)
+        os.chdir("../")
+
+        with open(f"{self.project_name}.tex", "w") as tex_file:
+            tex_file.write(tex_generator.tmp_file.read())
+        print("Tex file generated")
+
+        if parse_and_tex_generation_success:
+            err_code = os.system(f"pdflatex -interaction=nonstopmode {self.project_name}.tex")
+            print(err_code)
+            if err_code != 0:
+                show_error_message("Invalid syntax. Unable to compile")
+
             os.system(f"del {self.project_name}.aux")
             os.system(f"del {self.project_name}.tex")
             os.system(f"del {self.project_name}.log")
-            os.chdir("src/")
         else:
-            show_error_message("Invalid syntax. Unable to generate pdf")
+            show_error_message("Invalid syntax. Unable to compile")
+        os.chdir("src/")
 
 
 if __name__ == '__main__':
