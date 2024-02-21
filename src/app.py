@@ -1,12 +1,15 @@
+import logging
 import os
 import sys
 import subprocess
 from tex_generator import TexGenerator
 from input_parser import InputParser
+from syntax_validator import validate_syntax
 from config_provider import config
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
+import logging as log
 
 
 def create_separator():
@@ -32,9 +35,11 @@ def validate_tex_syntax(tex_file_path):
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
+        # super().__init__()
 
         self.project_name = "unnamedproject"
+
+        return
 
         self.setWindowTitle("ChordSheetWriter")
         self.setMinimumSize(int(config.get("gui", "main_window_width")), int(config.get("gui", "main_window_height")))
@@ -86,49 +91,64 @@ class MainWindow(QMainWindow):
         self.show()
 
     def generate_pdf(self):
-        input_content = [line for line in self.text_input.toPlainText().splitlines() if line != "" and line[0] not in "#%$"]
-        print("Read input")
+
+        with open("../example_inputs/project.chordsheet") as file:
+            source = [line.strip() for line in file.readlines()]
+        # source = self.text_input.toPlainText().splitlines()
+
+        input_content = [line for line in source if line]
+        log.info("Read input")
+
+        syntax_valid = validate_syntax(input_content)
+
+        if syntax_valid:
+            log.info("Syntax valid")
+        else:
+            log.error("Syntax invalid")
+
+        return
 
         parser = InputParser(input_content)
-        print("Parser initialized")
+        log.info("Parser initialized")
 
         try:
             metadata, parsed_song = parser.parse()
         except Exception:
-            print("Can't parse input")
+            log.error("Can't parse input")
             show_error_message("Invalid syntax. Unable to compile")
             return
         else:
-            print("Input parsed")
+            log.info("Input parsed")
 
         tex_generator = TexGenerator(metadata, parsed_song)
-        print("Tex generator initialilzed")
+        log.info("Tex generator initialilzed")
 
-        parse_and_tex_generation_success = tex_generator.generate_temp_tex_file()
-        print("Temporary file generated")
+        tex_generator.generate_temp_tex_file()
+        log.info("Temporary file generated")
 
         os.chdir("../")
 
         with open(f"{self.project_name}.tex", "w") as tex_file:
             tex_file.write(tex_generator.tmp_file.read())
-        print("Tex file generated")
+        log.info("Tex file generated")
 
-        if parse_and_tex_generation_success:
-            err_code = os.system(f"pdflatex -interaction=nonstopmode {self.project_name}.tex")
-            print(err_code)
-            if err_code != 0:
-                show_error_message("Invalid syntax. Unable to compile")
-
-            os.system(f"del {self.project_name}.aux")
-            os.system(f"del {self.project_name}.tex")
-            os.system(f"del {self.project_name}.log")
-        else:
+        err_code = os.system(f"pdflatex -interaction=nonstopmode {self.project_name}.tex")
+        if err_code != 0:
             show_error_message("Invalid syntax. Unable to compile")
+
+        os.system(f"del {self.project_name}.aux")
+        os.system(f"del {self.project_name}.tex")
+        os.system(f"del {self.project_name}.log")
+
         os.chdir("src/")
 
 
 if __name__ == '__main__':
-
+    logging.basicConfig(
+        level=log.DEBUG,
+        format="%(levelname)s %(message)s",
+        # filename="csw.log"
+    )
     app = QApplication(sys.argv)
-    main_window = MainWindow()
-    sys.exit(app.exec())
+    main_window = MainWindow().generate_pdf()
+    # app.exec()
