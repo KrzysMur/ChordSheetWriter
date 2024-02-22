@@ -19,7 +19,7 @@ class TestCategorizingLines(unittest.TestCase):
         self.assertEqual(categorize_line_type("adsfsadf asdf asdf asdf asdfasdff"), None)
 
     def test_correct_chords_lines(self):
-        self.assertEqual(categorize_line_type("[C_C]D|E[C_D]"), CHORDS_LINE)
+        self.assertEqual(categorize_line_type("[C_C]D|E\[C_D]"), CHORDS_LINE)
         self.assertEqual(categorize_line_type("|C_C|D|E[C_D]"), CHORDS_LINE)
         self.assertEqual(categorize_line_type("(3/4))C_C[D]E[C_D]"), CHORDS_LINE)
         self.assertEqual(categorize_line_type("("), CHORDS_LINE)

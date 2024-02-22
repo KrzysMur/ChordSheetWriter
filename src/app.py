@@ -144,8 +144,9 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+
     logging.basicConfig(
-        level=log.DEBUG,
+        level=log.INFO,
         format="%(levelname)s %(message)s",
         # filename="csw.log"
     )

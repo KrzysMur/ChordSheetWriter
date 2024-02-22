@@ -26,7 +26,6 @@ class InputParser:
         return metadata, song
 
 
-
 def fill_in_metadata(metadata):
     keys = ["title", "author", "album", "key", "tempo", "chords", "capo"]
     for key in keys:
