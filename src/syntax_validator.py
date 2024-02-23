@@ -1,5 +1,5 @@
 import logging as log
-
+from input_parser import divide_line_into_elements, is_barline
 
 METADATA_LINE = 1
 CHORDS_LINE = 2
@@ -44,6 +44,9 @@ def is_valid(line):
         line_no_time_signature = line.replace(" ", "")
 
         if line[0] == "(":
+            if ")" not in line_no_time_signature:
+                log.error(f"'{line}'   No closing bracket in time signature")
+                return False
 
             time_signature = line_no_time_signature[1:line_no_time_signature.find(")")].split("/")
             line_no_time_signature = line_no_time_signature[line_no_time_signature.find(")")+1:]
@@ -62,19 +65,24 @@ def is_valid(line):
                     return False
 
         if line_no_time_signature[0] not in "[|":
-            log.error(f"'{line}'   No bar line at the begining of the line")
+            log.error(f"'{line}'   No bar line at the beginning of the line")
             return False
 
         if line_no_time_signature[-1] not in "]|":
             log.error(f"'{line}'   No bar line at the end of the line")
             return False
 
-        segments = [line_no_time_signature[0]]
-        for i in range(1, len(line_no_time_signature)):
-            if segments[-1][-1] in
+        line_elements = divide_line_into_elements(line_no_time_signature)
 
-
+        for element in line_elements:
+            if is_barline(element[0]):
+                if len(element) > 1:
+                    if element != "][":
+                        log.error(f"'{line}'   Empty bar: '{element}'")
+                        return False
     return True
+
+
 
 
 
