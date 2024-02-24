@@ -27,8 +27,9 @@ class TexGenerator:
 
 
     def begin_table(self):
-        columns_number, index = self.get_max_columns_per_line()
-        self.tmp_file.write(f"\\begin{{tabularx}}{{\\textwidth}}{{{self.get_column_types(index)}}} \n")
+        bars = self.get_max_bars_per_line()
+        print(self.get_column_types(bars))
+        self.tmp_file.write(f"\\begin{{tabularx}}{{\\textwidth}}{{{self.get_column_types(bars)}}} \n")
 
     def generate_table_content(self):
         for line in self.song:
@@ -52,30 +53,9 @@ class TexGenerator:
     def end_table(self):
         self.tmp_file.write("\\end{tabularx}\n\n")
 
-    def get_column_types(self, max_column_index):
+    def get_column_types(self, bars):
         bar_width = self.get_bar_width()
-        columns = []
-        for element in self.song[max_column_index]:
-            if isinstance(element, BarChords):
-                columns.append(f"p{{{bar_width}cm}}")
-            else:
-                columns.append("L")
-        return " ".join(columns)
-
-    def get_max_columns_per_line(self):
-        max_columns = 0
-        index = 0
-        for i, line in enumerate(self.song):
-            cols = 0
-            for el in line:
-                if isinstance(el, BarChords):
-                    cols += len(el.chords)
-                elif not isinstance(el, TimeSignature):
-                    cols += 1
-            if cols > max_columns:
-                max_columns = cols
-                index = i
-        return max_columns, index
+        return " L L " + " L ".join([f"p{{{bar_width}cm}}" for _ in range(bars)]) + "L"
 
     def get_bar_width(self):
         bars = self.get_max_bars_per_line()

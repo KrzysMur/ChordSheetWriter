@@ -106,19 +106,11 @@ class MainWindow(QMainWindow):
         else:
             log.error("Syntax invalid")
 
-        return
-
         parser = InputParser(input_content)
         log.info("Parser initialized")
 
-        try:
-            metadata, parsed_song = parser.parse()
-        except Exception:
-            log.error("Can't parse input")
-            show_error_message("Invalid syntax. Unable to compile")
-            return
-        else:
-            log.info("Input parsed")
+        metadata, parsed_song = parser.parse()
+        log.info("Input parsed")
 
         tex_generator = TexGenerator(metadata, parsed_song)
         log.info("Tex generator initialilzed")
@@ -134,10 +126,10 @@ class MainWindow(QMainWindow):
 
         err_code = os.system(f"pdflatex -interaction=nonstopmode {self.project_name}.tex")
         if err_code != 0:
-            show_error_message("Invalid syntax. Unable to compile")
+            show_error_message("Unable to compile")
 
         os.system(f"del {self.project_name}.aux")
-        os.system(f"del {self.project_name}.tex")
+    #    os.system(f"del {self.project_name}.tex")
         os.system(f"del {self.project_name}.log")
 
         os.chdir("src/")
