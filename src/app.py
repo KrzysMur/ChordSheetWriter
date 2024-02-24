@@ -12,12 +12,6 @@ from PyQt6.QtCore import Qt
 import logging as log
 
 
-def create_separator():
-    separator = QFrame()
-    separator.setFrameShape(QFrame.Shape.VLine)
-    return separator
-
-
 def show_error_message(text="ERROR"):
     msg = QMessageBox()
     msg.setWindowTitle("ERROR")
@@ -35,14 +29,12 @@ def validate_tex_syntax(tex_file_path):
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        # super().__init__()
+        super().__init__()
 
         self.project_name = "unnamedproject"
 
-        return
-
         self.setWindowTitle("ChordSheetWriter")
-        self.setMinimumSize(int(config.get("gui", "main_window_width")), int(config.get("gui", "main_window_height")))
+        self.setMinimumSize(int(config.get_main_window_width()), int(config.get_main_window_height()))
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -53,7 +45,7 @@ class MainWindow(QMainWindow):
         self.tool_bar = QHBoxLayout()
         self.tool_bar.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        button_size = int(config.get("gui", "toolbar_button_size"))
+        button_size = int(config.get_toolbar_button_size())
 
         self.save_button = QPushButton(QIcon("../resources/icons/save.png"), "", self)
         self.save_button.setFixedSize(button_size, button_size)
@@ -67,7 +59,7 @@ class MainWindow(QMainWindow):
         self.start_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.start_button)
 
-        self.tool_bar.addWidget(create_separator())
+        self.tool_bar.addSpacing(15)
 
         self.undo_button = QPushButton(QIcon("../resources/icons/undo.png"), "", self)
         self.undo_button.setFixedSize(button_size, button_size)
@@ -77,7 +69,7 @@ class MainWindow(QMainWindow):
         self.redo_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.redo_button)
 
-        self.tool_bar.addWidget(create_separator())
+        self.tool_bar.addSpacing(15)
 
         self.settings_button = QPushButton(QIcon("../resources/icons/settings.png"), "", self)
         self.settings_button.setFixedSize(button_size, button_size)
@@ -92,9 +84,11 @@ class MainWindow(QMainWindow):
 
     def generate_pdf(self):
 
+        """
         with open("../example_inputs/project.chordsheet") as file:
-            source = [line.strip() for line in file.readlines()]
-        # source = self.text_input.toPlainText().splitlines()
+            source = [line.strip() for line in file.readlines()]"""
+
+        source = self.text_input.toPlainText().splitlines()
 
         input_content = [line for line in source if line]
         log.info("Read input")
@@ -104,7 +98,8 @@ class MainWindow(QMainWindow):
         if syntax_valid:
             log.info("Syntax valid")
         else:
-            log.error("Syntax invalid")
+            show_error_message("Invalid syntax. Cannot continue. \n See console_output.log file for further information")
+            return
 
         parser = InputParser(input_content)
         log.info("Parser initialized")
@@ -129,7 +124,7 @@ class MainWindow(QMainWindow):
             show_error_message("Unable to compile")
 
         os.system(f"del {self.project_name}.aux")
-    #    os.system(f"del {self.project_name}.tex")
+        os.system(f"del {self.project_name}.tex")
         os.system(f"del {self.project_name}.log")
 
         os.chdir("src/")
@@ -138,10 +133,15 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
 
     logging.basicConfig(
-        level=log.INFO,
+        level=log.DEBUG,
         format="%(levelname)s %(message)s",
-        # filename="csw.log"
+        filename="../console_output.log"
     )
     app = QApplication(sys.argv)
-    main_window = MainWindow().generate_pdf()
-    # app.exec()
+    log.debug("Initialized QApplication")
+
+    main_window = MainWindow()
+    log.debug("Initialized MainWindow")
+
+    sys.exit(app.exec())
+

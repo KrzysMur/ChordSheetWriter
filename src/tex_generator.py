@@ -28,7 +28,6 @@ class TexGenerator:
 
     def begin_table(self):
         bars = self.get_max_bars_per_line()
-        print(self.get_column_types(bars))
         self.tmp_file.write(f"\\begin{{tabularx}}{{\\textwidth}}{{{self.get_column_types(bars)}}} \n")
 
     def generate_table_content(self):
@@ -60,12 +59,12 @@ class TexGenerator:
     def get_bar_width(self):
         bars = self.get_max_bars_per_line()
 
-        space = (float(config.get("page", "page_width"))
-                 - float(config.get("page", "left_margin"))
-                 - float(config.get("page", "right_margin")))
+        space = (float(config.get_page_width())
+                 - float(config.get_left_margin())
+                 - float(config.get_right_margin()))
 
-        return (space - float(config.get("page", "bar_line_width_cooficient")) *
-                float(config.get("page", "bar_line_width"))*(bars+2)) / bars
+        return (space - float(config.get_bar_line_width_coefficient()) *
+                float(config.get_bar_line_width())*(bars+2)) / bars
 
     def get_max_bars_per_line(self):
         max_bars = 0
@@ -84,12 +83,12 @@ class TexGenerator:
         for line in lines:
             self.tmp_file.write(line)
 
-        self.tmp_file.write(f"\\renewcommand{{\\arraystretch}}{{{config.get("page", "line_spacing")}}}\n")
+        self.tmp_file.write(f"\\renewcommand{{\\arraystretch}}{{{config.get_line_spacing()}}}\n")
 
-        self.tmp_file.write(f"\\geometry{{top={config.get('page', 'top_margin')}cm, "
-                            f"bottom={config.get('page', 'bottom_margin')}cm, "
-                            f"left={config.get('page', 'left_margin')}cm, "
-                            f"right={config.get('page', 'right_margin')}cm}}\n\n\n")
+        self.tmp_file.write(f"\\geometry{{top={config.get_top_margin()}cm, "
+                            f"bottom={config.get_bottom_margin()}cm, "
+                            f"left={config.get_left_margin()}cm, "
+                            f"right={config.get_right_margin()}cm}}\n\n\n")
 
     def write_title_and_author(self):
         self.tmp_file.write(

@@ -87,7 +87,10 @@ def is_valid(line):
 
 
 def validate_syntax(lines):
+    is_chords_line = False
     for line in lines:
         if not is_valid(line):
             return False
-    return True
+        elif line[0] in "[(|":
+            is_chords_line = True
+    return is_chords_line
