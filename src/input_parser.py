@@ -40,19 +40,14 @@ def parse_chords(chords):
 
 def parse_line(line):
     time_signature = []
+
     if line[0] == "(":
         time_sig_end = line.find(")")
         numerator, denominator = line[1:time_sig_end].split("/")
         time_signature.append(TimeSignature(numerator, denominator))
         line = line[time_sig_end+1:].strip()
 
-    line_elements = [line[0]]
-    for char in line[1:]:
-        if is_barline(line_elements[-1][-1]) == is_barline(char):
-            line_elements[-1] += char
-        else:
-            line_elements.append(char)
-
+    line_elements = divide_line_into_elements(line)
     elements = []
     for i in range(len(line_elements)):
         if i % 2 == 0:
@@ -61,6 +56,15 @@ def parse_line(line):
             elements.append(BarChords(line_elements[i]))
     return time_signature + elements
 
+
+def divide_line_into_elements(line):
+    line_elements = [line[0]]
+    for i in range(1, len(line)):
+        if is_barline(line_elements[-1][-1]) == is_barline(line[i]):
+            line_elements[-1] += line[i]
+        else:
+            line_elements.append(line[i])
+    return line_elements
 
 def is_barline(char: str):
     return char[0] in "[]|"

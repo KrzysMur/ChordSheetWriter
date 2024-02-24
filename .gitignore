@@ -6,6 +6,7 @@
 *.synctex.gz
 *.pdf
 *.tex
+.aux
 
 
 # Byte-compiled / optimized / DLL files

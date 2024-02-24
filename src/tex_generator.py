@@ -25,9 +25,10 @@ class TexGenerator:
         self.end_document()
         self.tmp_file.seek(0)
 
+
     def begin_table(self):
-        columns_number, index = self.get_max_columns_per_line()
-        self.tmp_file.write(f"\\begin{{tabularx}}{{\\textwidth}}{{{self.get_column_types(index)}}} \n")
+        bars = self.get_max_bars_per_line()
+        self.tmp_file.write(f"\\begin{{tabularx}}{{\\textwidth}}{{{self.get_column_types(bars)}}} \n")
 
     def generate_table_content(self):
         for line in self.song:
@@ -51,40 +52,19 @@ class TexGenerator:
     def end_table(self):
         self.tmp_file.write("\\end{tabularx}\n\n")
 
-    def get_column_types(self, max_column_index):
+    def get_column_types(self, bars):
         bar_width = self.get_bar_width()
-        columns = []
-        for element in self.song[max_column_index]:
-            if isinstance(element, BarChords):
-                columns.append(f"p{{{bar_width}cm}}")
-            else:
-                columns.append("L")
-        return " ".join(columns)
-
-    def get_max_columns_per_line(self):
-        max_columns = 0
-        index = 0
-        for i, line in enumerate(self.song):
-            cols = 0
-            for el in line:
-                if isinstance(el, BarChords):
-                    cols += len(el.chords)
-                else:
-                    cols += 1
-            if cols > max_columns:
-                max_columns = cols
-                index = i
-        return max_columns, index
+        return " L L " + " L ".join([f"p{{{bar_width}cm}}" for _ in range(bars)]) + "L"
 
     def get_bar_width(self):
         bars = self.get_max_bars_per_line()
 
-        space = (float(config.get("page", "page_width"))
-                 - float(config.get("page", "left_margin"))
-                 - float(config.get("page", "right_margin")))
+        space = (float(config.get_page_width())
+                 - float(config.get_left_margin())
+                 - float(config.get_right_margin()))
 
-        return (space - float(config.get("page", "bar_line_width_cooficient")) *
-                float(config.get("page", "bar_line_width"))*(bars+2)) / bars
+        return (space - float(config.get_bar_line_width_coefficient()) *
+                float(config.get_bar_line_width())*(bars+2)) / bars
 
     def get_max_bars_per_line(self):
         max_bars = 0
@@ -103,12 +83,12 @@ class TexGenerator:
         for line in lines:
             self.tmp_file.write(line)
 
-        self.tmp_file.write(f"\\renewcommand{{\\arraystretch}}{{{config.get("page", "line_spacing")}}}\n")
+        self.tmp_file.write(f"\\renewcommand{{\\arraystretch}}{{{config.get_line_spacing()}}}\n")
 
-        self.tmp_file.write(f"\\geometry{{top={config.get('page', 'top_margin')}cm, "
-                            f"bottom={config.get('page', 'bottom_margin')}cm, "
-                            f"left={config.get('page', 'left_margin')}cm, "
-                            f"right={config.get('page', 'right_margin')}cm}}\n\n\n")
+        self.tmp_file.write(f"\\geometry{{top={config.get_top_margin()}cm, "
+                            f"bottom={config.get_bottom_margin()}cm, "
+                            f"left={config.get_left_margin()}cm, "
+                            f"right={config.get_right_margin()}cm}}\n\n\n")
 
     def write_title_and_author(self):
         self.tmp_file.write(

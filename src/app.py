@@ -1,65 +1,147 @@
-import PySimpleGUI as sg
+import logging
 import os
+import sys
+import subprocess
 from tex_generator import TexGenerator
 from input_parser import InputParser
+from syntax_validator import validate_syntax
 from config_provider import config
-import subprocess
-from pdflatex import PDFLaTeX
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt
+import logging as log
 
 
-class App:
-    def __init__(self, theme='DarkGrey4'):
-        sg.theme(theme)
-        self.layout = self.create_input_column()
-        self.window = sg.Window('ChordSheetWriter', self.layout, resizable=True)
-        self.project_path = None
-        self.project_name = None
+def show_error_message(text="ERROR"):
+    msg = QMessageBox()
+    msg.setWindowTitle("ERROR")
+    msg.setText(text)
+    msg.setIcon(QMessageBox.Icon.Information)
+    msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msg.exec()
 
-    @staticmethod
-    def create_input_column():
-        column = [[sg.Button("RENDER"), sg.Button("SAVE"), sg.Button("OPEN")],
-                  [sg.Multiline(size=(50, 25),
-                                key="INPUT",
-                                expand_x=True,
-                                expand_y=True)]]
-        return column
 
-    def run(self):
-        while True:
-            event, values = self.window.read()
+def validate_tex_syntax(tex_file_path):
+    command = "lacheck " + tex_file_path
+    result = subprocess.getoutput(command)
+    return result
 
-            match event:
-                case sg.WINDOW_CLOSED:
-                    break
-                case "RENDER":
-                    print(values["INPUT"])
-                case "SAVE":
-                    pass
-                case "OPEN":
-                    pass
 
-        self.window.close()
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.project_name = "unnamedproject"
+
+        self.setWindowTitle("ChordSheetWriter")
+        self.setMinimumSize(int(config.get_main_window_width()), int(config.get_main_window_height()))
+
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        self.layout = QVBoxLayout(central_widget)
+        central_widget.setLayout(self.layout)
+
+        self.tool_bar = QHBoxLayout()
+        self.tool_bar.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        button_size = int(config.get_toolbar_button_size())
+
+        self.save_button = QPushButton(QIcon("../resources/icons/save.png"), "", self)
+        self.save_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.save_button)
+
+        self.load_button = QPushButton(QIcon("../resources/icons/load.png"), "", self)
+        self.load_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.load_button)
+
+        self.start_button = QPushButton(QIcon("../resources/icons/start.png"), "", self, clicked=self.generate_pdf)
+        self.start_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.start_button)
+
+        self.tool_bar.addSpacing(15)
+
+        self.undo_button = QPushButton(QIcon("../resources/icons/undo.png"), "", self)
+        self.undo_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.undo_button)
+
+        self.redo_button = QPushButton(QIcon("../resources/icons/redo.png"), "", self)
+        self.redo_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.redo_button)
+
+        self.tool_bar.addSpacing(15)
+
+        self.settings_button = QPushButton(QIcon("../resources/icons/settings.png"), "", self)
+        self.settings_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.settings_button)
+
+        self.layout.addLayout(self.tool_bar)
+
+        self.text_input = QTextEdit()
+        self.layout.addWidget(self.text_input)
+
+        self.show()
+
+    def generate_pdf(self):
+
+        """
+        with open("../example_inputs/project.chordsheet") as file:
+            source = [line.strip() for line in file.readlines()]"""
+
+        source = self.text_input.toPlainText().splitlines()
+
+        input_content = [line for line in source if line]
+        log.info("Read input")
+
+        syntax_valid = validate_syntax(input_content)
+
+        if syntax_valid:
+            log.info("Syntax valid")
+        else:
+            show_error_message("Invalid syntax. Cannot continue. \n See console_output.log file for further information")
+            return
+
+        parser = InputParser(input_content)
+        log.info("Parser initialized")
+
+        metadata, parsed_song = parser.parse()
+        log.info("Input parsed")
+
+        tex_generator = TexGenerator(metadata, parsed_song)
+        log.info("Tex generator initialilzed")
+
+        tex_generator.generate_temp_tex_file()
+        log.info("Temporary file generated")
+
+        os.chdir("../")
+
+        with open(f"{self.project_name}.tex", "w") as tex_file:
+            tex_file.write(tex_generator.tmp_file.read())
+        log.info("Tex file generated")
+
+        err_code = os.system(f"pdflatex -interaction=nonstopmode {self.project_name}.tex")
+        if err_code != 0:
+            show_error_message("Unable to compile")
+
+        os.system(f"del {self.project_name}.aux")
+        os.system(f"del {self.project_name}.tex")
+        os.system(f"del {self.project_name}.log")
+
+        os.chdir("src/")
 
 
 if __name__ == '__main__':
-    project_name = "project1"
 
-    with open(f"../example_inputs/{project_name}.chordsheet") as file:
-        input_content = [line.strip() for line in file.readlines() if line != "\n"]
+    logging.basicConfig(
+        level=log.DEBUG,
+        format="%(levelname)s %(message)s",
+        filename="../console_output.log"
+    )
+    app = QApplication(sys.argv)
+    log.debug("Initialized QApplication")
 
-    parser = InputParser(input_content)
-    metadata, parsed_song = parser.parse()
+    main_window = MainWindow()
+    log.debug("Initialized MainWindow")
 
-    tex_generator = TexGenerator(metadata, parsed_song)
-    tex_generator.generate_temp_tex_file()
-
-    with open(f"../{project_name}.tex", "w") as tex_file:
-        tex_file.write(tex_generator.tmp_file.read())
-
-    os.chdir("../")
-    os.system(f"pdflatex {project_name}.tex")
-    os.system(f"del {project_name}.aux")
-    os.system(f"del {project_name}.tex")
-    os.system(f"del {project_name}.log")
-
+    sys.exit(app.exec())
 

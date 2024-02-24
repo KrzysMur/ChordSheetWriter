@@ -10,4 +10,41 @@ class ConfigProvider:
         return self.config[section][key]
 
 
+    def get_page_width(self):
+        return self.config["page"]["page_width"]
+
+    def get_top_margin(self):
+        return self.config["page"]["top_margin"]
+
+    def get_left_margin(self):
+        return self.config["page"]["left_margin"]
+
+    def get_right_margin(self):
+        return self.config["page"]["right_margin"]
+
+    def get_bottom_margin(self):
+        return self.config["page"]["bottom_margin"]
+
+    def get_line_spacing(self):
+        return self.config["page"]["line_spacing"]
+
+    def get_bar_line_width(self):
+        return self.config["page"]["bar_line_width"]
+
+    def get_bar_line_width_coefficient(self):
+        return self.config["page"]["bar_line_width_coefficient"]
+
+    def get_toolbar_button_size(self):
+        return self.config["gui"]["toolbar_button_size"]
+
+    def get_main_window_width(self):
+        return self.config["gui"]["main_window_width"]
+
+    def get_main_window_height(self):
+        return self.config["gui"]["main_window_height"]
+
+    def get_toolbar_group_spacing(self):
+        return self.config["gui"]["toolbar_group_spacing"]
+
+
 config = ConfigProvider()
