@@ -35,16 +35,28 @@ class ConfigProvider:
         return self.config["page"]["bar_line_width_coefficient"]
 
     def get_toolbar_button_size(self):
-        return self.config["gui"]["toolbar_button_size"]
+        return int(self.config["gui"]["toolbar_button_size"])
 
     def get_main_window_width(self):
-        return self.config["gui"]["main_window_width"]
+        return int(self.config["gui"]["main_window_width"])
 
     def get_main_window_height(self):
-        return self.config["gui"]["main_window_height"]
+        return int(self.config["gui"]["main_window_height"])
 
     def get_toolbar_group_spacing(self):
-        return self.config["gui"]["toolbar_group_spacing"]
+        return int(self.config["gui"]["toolbar_group_spacing"])
+
+    def get_save_window_width(self):
+        return int(self.config["gui"]["save_window_width"])
+
+    def get_save_window_height(self):
+        return int(self.config["gui"]["save_window_height"])
+
+    def get_logging_level(self):
+        return int(self.config["dev"]["logging_level"])
+
+    def get_delete_log_after_successful_pdf_generation(self):
+        return self.config["dev"]["delete_log_after_successful_pdf_generation"]
 
 
 config = ConfigProvider()

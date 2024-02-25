@@ -7,9 +7,6 @@ CHORDS_LINE = 2
 METADATA_KEYS = ["title", "author", "album", "key", "tempo", "chords", "capo"]
 
 
-
-
-
 def categorize_line_type(line):
     if "=" in line:
         return METADATA_LINE
@@ -17,9 +14,13 @@ def categorize_line_type(line):
         return CHORDS_LINE
 
 
-
 def is_valid(line):
     line_type = categorize_line_type(line)
+
+    for char in line:
+        if ord(char) > 127:
+            log.error(f"'{line}'   Invalid character: '{char}'")
+            return False
 
     if not line_type:
         log.error(f"'{line}'   Invalid line")
@@ -50,6 +51,10 @@ def is_valid(line):
 
             time_signature = line_no_time_signature[1:line_no_time_signature.find(")")].split("/")
             line_no_time_signature = line_no_time_signature[line_no_time_signature.find(")")+1:]
+
+            if line_no_time_signature == "":
+                log.error(f"'{line}'   Empty line")
+                return False
 
             if len(time_signature) == 1:
                 log.error(f"'{line}'   '/' expected in time signature")
@@ -83,14 +88,11 @@ def is_valid(line):
     return True
 
 
-
-
-
 def validate_syntax(lines):
     is_chords_line = False
     for line in lines:
         if not is_valid(line):
             return False
-        elif line[0] in "[(|":
+        elif line[0] in "[(|" and line[-1] in "]|":
             is_chords_line = True
     return is_chords_line
