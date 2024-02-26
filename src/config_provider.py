@@ -52,6 +52,12 @@ class ConfigProvider:
     def get_save_window_height(self):
         return int(self.config["gui"]["save_window_height"])
 
+    def get_open_window_height(self):
+        return int(self.config["gui"]["open_window_height"])
+
+    def get_open_window_width(self):
+        return int(self.config["gui"]["open_window_width"])
+
     def get_logging_level(self):
         return int(self.config["dev"]["logging_level"])
 

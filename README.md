@@ -2,7 +2,11 @@
 # ChordSheetWriter
 Simple and easy to use program to write chord sheets
 
+# Requirements
 
+- Python > 3.10 (3.12 recommended)
+- MikTex
+- PyQt6 package in Python environment
 
 # How to write chordsheet?
 
