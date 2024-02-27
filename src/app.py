@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.project_name = "unnamedproject"
-        self.path_to_project = None
+        self.project_path = None
         self.project_directory = os.getcwd()
 
         self.setWindowTitle("ChordSheetWriter")
@@ -105,7 +105,7 @@ class MainWindow(QMainWindow):
     def generate_pdf(self):
 
         self.save_project()
-        if not self.path_to_project:
+        if not self.project_path:
             return
 
         source = self.text_input.toPlainText().splitlines()
@@ -149,30 +149,40 @@ class MainWindow(QMainWindow):
         os.system(f"del {self.project_name}.log")
 
     def save_project(self):
-        if not self.path_to_project:
+        if not self.project_path:
             directory_dialog = SaveProjectWindow()
             directory_dialog.exec()
-            self.path_to_project = directory_dialog.path
+            self.project_path = directory_dialog.path
             self.project_name = directory_dialog.project_name
-        if self.path_to_project is not None:
-            with open(self.path_to_project, "w") as file:
+        if self.project_path is not None:
+            with open(self.project_path, "w") as file:
                 file.write(self.text_input.toPlainText())
 
     def open_project(self):
-        dialog = OpenProjectWindow()
-        dialog.exec()
-        path_to_chord_sheet = os.path.normpath(dialog.path)
+        selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
+                                                       "Chord Sheet Files (*.chordsheet *.txt)")
+        log.debug(f"Selected path to open: {selected_file}")
 
-        if path_to_chord_sheet:
-            self.project_name = os.path.basename(path_to_chord_sheet).split(".")[0]
+        if selected_file:
+            log.debug("Selected path is valid.")
 
-            self.path_to_project = path_to_chord_sheet
-            self.project_directory = os.path.dirname(path_to_chord_sheet)
+            selected_file = os.path.normpath(selected_file)
+
+            self.project_name = os.path.basename(selected_file).split(".")[0]
+            log.debug(f"Selected project name: {self.project_name}")
+
+            self.project_path = selected_file
+            self.project_directory = os.path.dirname(selected_file)
+
+            log.debug(f"Path to project: {self.project_path} Project directory: {self.project_directory}")
 
             os.chdir(self.project_directory)
+            log.debug(f"Switched to directory: {os.getcwd()}")
 
-            with open(path_to_chord_sheet, "r") as file:
+            with open(selected_file, "r") as file:
                 self.text_input.setText(file.read())
+        else:
+            log.debug("Empty path. Cannot open")
 
 
 class SaveProjectWindow(QDialog):
@@ -244,56 +254,6 @@ class SaveProjectWindow(QDialog):
         selected_directory = self.location_browser.getExistingDirectory(self, "Select Directory", "")
         if selected_directory:
             self.location_input.setText(os.path.normpath(selected_directory))
-
-
-class OpenProjectWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setFixedSize(config.get_open_window_width(), config.get_open_window_height())
-        self.setWindowTitle("Open project")
-
-        self.path = None
-
-        # Input layout section
-        input_layout = QHBoxLayout()
-
-        browse_button = QPushButton("Browse")
-        browse_button.clicked.connect(self.select_file)
-        input_layout.addWidget(browse_button)
-
-        self.dir_input = QLineEdit()
-        input_layout.addWidget(self.dir_input)
-
-        # Buttons layout section
-        buttons_layout = QHBoxLayout()
-
-        cancel_button = QPushButton("Cancel")
-        cancel_button.clicked.connect(self.close)
-        buttons_layout.addWidget(cancel_button)
-
-        open_button = QPushButton("Open")
-        open_button.clicked.connect(self.get_file_location_to_open)
-        buttons_layout.addWidget(open_button)
-
-        # Init layout
-        self.layout = QVBoxLayout()
-        self.layout.addLayout(input_layout)
-        self.layout.addLayout(buttons_layout)
-
-        self.setLayout(self.layout)
-
-    def get_file_location_to_open(self):
-        self.path = self.dir_input.text().strip()
-
-        if not os.path.exists(self.path) or not os.path.isfile(self.path):
-            self.path = None
-        self.close()
-
-    def select_file(self):
-        selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
-                                                       "Chord Sheet Files (*.chordsheet *.txt)")
-        if selected_file is not None:
-            self.dir_input.setText(selected_file)
 
 
 if __name__ == '__main__':
