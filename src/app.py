@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-import time
 import logging
 
 from tex_generator import TexGenerator
@@ -10,7 +9,7 @@ from syntax_validator import validate_syntax
 from config_provider import config
 
 from PyQt6.QtWidgets import *
-from PyQt6.QtGui import QIcon, QFont, QKeySequence, QShortcut
+from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtCore import Qt
 
 
@@ -137,7 +136,7 @@ class MainWindow(QMainWindow):
         tex_generator.generate_temp_tex_file()
         logging.info("Temporary file generated")
 
-        tex_file_path = f"{self.project_directory}\\{self.project_name}.tex"
+        tex_file_path = os.path.join(self.project_directory, f"{self.project_name}.tex")
         logging.info(f"Tex file path: {tex_file_path}")
 
         with open(tex_file_path, "w") as tex_file:
@@ -151,29 +150,42 @@ class MainWindow(QMainWindow):
             show_error_message("Unable to compile")
             logging.error("Unable to compile. See texput.log for LaTeX debugging info")
         else:
-            os.system(f"del {tex_file_path}")
-            os.system(f"del {self.project_directory}\\{self.project_name}.aux")
-            os.system(f"del {self.project_directory}\\{self.project_name}.log")
-            logging.debug("Compiled successfully")
+            project_path_no_extention = os.path.join(self.project_directory, self.project_name)
+            os.system(f"del {project_path_no_extention}.tex")
+            os.system(f"del {project_path_no_extention}.aux")
+            os.system(f"del {project_path_no_extention}.log")
+
+            if os.path.exists(project_path_no_extention+".pdf"):
+                logging.info("Compiled successfully")
+            else:
+                logging.error("Pdf not compiled correctly")
 
     def save_project(self):
+
         if not self.project_file_path:
-            directory_dialog = SaveProjectWindow()
-            logging.info("Initialized Sacing dialog")
-            directory_dialog.exec()
 
-            self.project_file_path = directory_dialog.path
-            self.project_name = directory_dialog.project_name
+            file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Chord Sheet (*.chordsheet)")
+            file_path = os.path.normpath(file_path)
+
+            self.project_file_path = file_path
+            logging.debug(f"Saved project file path: {self.project_file_path}")
+
+            self.project_name = os.path.basename(file_path).split(".")[0]
+            logging.debug(f"Saved project name: {self.project_name}")
+
             self.project_directory = os.path.dirname(self.project_file_path)
+            logging.debug(f"Saved project directory: {self.project_directory}")
 
-            logging.debug(f"")
         if self.project_file_path and self.project_name:
+
             with open(self.project_file_path, "w") as file:
                 file.write(self.text_input.toPlainText())
 
+            logging.debug("Input content saved to file")
+
     def open_project(self):
         selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
-                                                       "Chord Sheet Files (*.chordsheet *.txt)")
+                                                       "Chord Sheet Files (*.chordsheet)")
         logging.debug(f"Selected path to open: {selected_file}")
 
         if selected_file:
@@ -191,91 +203,21 @@ class MainWindow(QMainWindow):
 
             with open(selected_file, "r") as file:
                 self.text_input.setText(file.read())
+
+            logging.info("File content opened in editor")
         else:
             logging.debug("Empty path. Cannot open")
 
 
-class SaveProjectWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.path = None
-        self.project_name = None
-        self.setWindowTitle("Save project as...")
-        self.setFixedSize(config.get_save_window_width(), config.get_save_window_height())
-        self.layout = QVBoxLayout()
-
-        # Init directory input section
-        self.location_input_layout = QHBoxLayout()
-
-        self.location_browser = QFileDialog(self)
-        self.location_browser.setFileMode(QFileDialog.FileMode.Directory)
-        self.location_input_layout.addWidget(self.location_browser)
-
-        select_button = QPushButton("Browse")
-        select_button.clicked.connect(self.select_directory)
-        self.location_input_layout.addWidget(select_button)
-
-        self.location_input = QLineEdit()
-        self.location_input_layout.addWidget(self.location_input)
-
-        # Save and Cancel Buttons init section
-        self.buttons_layout = QHBoxLayout()
-
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.close)
-        self.buttons_layout.addWidget(self.cancel_button)
-
-        self.save_button = QPushButton("Save")
-        self.save_button.clicked.connect(self.get_project_path)
-        self.buttons_layout.addWidget(self.save_button)
-
-        # Layout init
-        self.layout.addWidget(QLabel("Select directory for your chord sheet:"))
-        self.layout.addLayout(self.location_input_layout)
-
-        self.layout.addWidget(QLabel("Name your chord sheet:"))
-        self.project_name_input = QLineEdit()
-        self.layout.addWidget(self.project_name_input)
-
-        info_text = QLabel("Note that PDF and log files will be generated in the project directory.")
-        info_text.setStyleSheet("font-size: 7pt;")
-        self.layout.addWidget(info_text)
-
-        self.layout.addLayout(self.buttons_layout)
-        self.setLayout(self.layout)
-
-    def get_project_path(self):
-        directory = self.location_input.text().strip()
-        self.project_name = self.project_name_input.text().strip()
-        if directory and self.project_name:
-            try:
-                self.path = os.path.join(directory, self.project_name + ".chordsheet")
-                self.path = os.path.normpath(self.path)
-                logging.debug("Selected path:  " + self.path)
-            except ValueError:
-                logging.warning("Invalid path characters")
-        else:
-            logging.warning("Invalid location and project name")
-            show_error_message("Invalid location and project name")
-            self.path = None
-        self.close()
-
-    def select_directory(self):
-        selected_directory = self.location_browser.getExistingDirectory(self, "Select Directory", "")
-        if selected_directory:
-            self.location_input.setText(os.path.normpath(selected_directory))
-
-
 if __name__ == '__main__':
 
-    logging_lvl = config.get_logging_level()
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(levelname)s %(message)s",
         # filename="../console_output.log"
     )
 
-    logging.info(f"Welcome to ChordSheetWriter! Entered proccess at {time.time()}")
+    logging.info(f"Welcome to ChordSheetWriter!")
 
     app = QApplication(sys.argv)
     logging.debug("Initialized QApplication")
