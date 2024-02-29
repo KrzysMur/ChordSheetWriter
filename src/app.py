@@ -1,9 +1,8 @@
-import logging
 import os
 import sys
 import subprocess
 import time
-import logging as log
+import logging
 
 from tex_generator import TexGenerator
 from input_parser import InputParser
@@ -23,14 +22,18 @@ def show_error_message(text="ERROR"):
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
 
+def log_cwd():
+    # temporary func for debug and testing; triggered with settings button
+    logging.debug(os.getcwd())
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.project_name = "unnamedproject"
-        self.project_path = None
-        self.project_directory = os.getcwd()
+        self.project_name = None
+        self.project_file_path = None
+        self.project_directory = None
 
         self.setWindowTitle("ChordSheetWriter")
         self.setMinimumSize(config.get_main_window_width(), config.get_main_window_height())
@@ -79,6 +82,7 @@ class MainWindow(QMainWindow):
         self.tool_bar.addSpacing(config.get_toolbar_group_spacing())
 
         self.settings_button = QPushButton(QIcon("../resources/icons/settings.png"), "", self)
+        self.settings_button.clicked.connect(log_cwd)
         self.settings_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.settings_button)
 
@@ -105,84 +109,90 @@ class MainWindow(QMainWindow):
     def generate_pdf(self):
 
         self.save_project()
-        if not self.project_path:
+        if not self.project_file_path:
             return
 
         source = self.text_input.toPlainText().splitlines()
 
         input_content = [line for line in source if line]
-        log.info("Read input")
+        logging.info("Read input")
 
         syntax_valid = validate_syntax(input_content)
 
         if syntax_valid:
-            log.info("Syntax valid")
+            logging.info("Syntax valid")
         else:
             show_error_message("Invalid syntax. Cannot continue. \n See console_output.log file for further information")
             return
 
         parser = InputParser(input_content)
-        log.info("Parser initialized")
+        logging.info("Parser initialized")
 
         metadata, parsed_song = parser.parse()
-        log.info("Input parsed")
+        logging.info("Input parsed")
 
         tex_generator = TexGenerator(metadata, parsed_song)
-        log.info("Tex generator initialilzed")
+        logging.info("Tex generator initialilzed")
 
         tex_generator.generate_temp_tex_file()
-        log.info("Temporary file generated")
+        logging.info("Temporary file generated")
 
-        with open(f"{self.project_name}.tex", "w") as tex_file:
+        tex_file_path = f"{self.project_directory}\\{self.project_name}.tex"
+        logging.info(f"Tex file path: {tex_file_path}")
+
+        with open(tex_file_path, "w") as tex_file:
             tex_file.write(tex_generator.tmp_file.read())
-        log.info("Tex file generated")
+        logging.info("Tex file generated")
 
-        err_code = os.system(f"pdflatex -interaction=nonstopmode {self.project_name}.tex")
+        command = f"pdflatex -interaction=nonstopmode -output-directory={self.project_directory} {tex_file_path}"
+        err_code = os.system(command)
+
         if err_code != 0:
             show_error_message("Unable to compile")
-            log.error("Unable to compile")
+            logging.error("Unable to compile. See texput.log for LaTeX debugging info")
         else:
-            log.debug("Compiled successfully")
-
-        os.system(f"del {self.project_name}.aux")
-        os.system(f"del {self.project_name}.tex")
-        os.system(f"del {self.project_name}.log")
+            os.system(f"del {tex_file_path}")
+            os.system(f"del {self.project_directory}\\{self.project_name}.aux")
+            os.system(f"del {self.project_directory}\\{self.project_name}.log")
+            logging.debug("Compiled successfully")
 
     def save_project(self):
-        if not self.project_path:
+        if not self.project_file_path:
             directory_dialog = SaveProjectWindow()
+            logging.info("Initialized Sacing dialog")
             directory_dialog.exec()
-            self.project_path = directory_dialog.path
+
+            self.project_file_path = directory_dialog.path
             self.project_name = directory_dialog.project_name
-        if self.project_path is not None:
-            with open(self.project_path, "w") as file:
+            self.project_directory = os.path.dirname(self.project_file_path)
+
+            logging.debug(f"")
+        if self.project_file_path and self.project_name:
+            with open(self.project_file_path, "w") as file:
                 file.write(self.text_input.toPlainText())
 
     def open_project(self):
         selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
                                                        "Chord Sheet Files (*.chordsheet *.txt)")
-        log.debug(f"Selected path to open: {selected_file}")
+        logging.debug(f"Selected path to open: {selected_file}")
 
         if selected_file:
-            log.debug("Selected path is valid.")
+            logging.debug("Selected path is valid.")
 
             selected_file = os.path.normpath(selected_file)
 
             self.project_name = os.path.basename(selected_file).split(".")[0]
-            log.debug(f"Selected project name: {self.project_name}")
+            logging.debug(f"Selected project name: {self.project_name}")
 
-            self.project_path = selected_file
+            self.project_file_path = selected_file
             self.project_directory = os.path.dirname(selected_file)
 
-            log.debug(f"Path to project: {self.project_path} Project directory: {self.project_directory}")
-
-            os.chdir(self.project_directory)
-            log.debug(f"Switched to directory: {os.getcwd()}")
+            logging.debug(f"Path to project: {self.project_file_path} Project directory: {self.project_directory}")
 
             with open(selected_file, "r") as file:
                 self.text_input.setText(file.read())
         else:
-            log.debug("Empty path. Cannot open")
+            logging.debug("Empty path. Cannot open")
 
 
 class SaveProjectWindow(QDialog):
@@ -241,11 +251,11 @@ class SaveProjectWindow(QDialog):
             try:
                 self.path = os.path.join(directory, self.project_name + ".chordsheet")
                 self.path = os.path.normpath(self.path)
-                log.debug("Selected path:  " + self.path)
+                logging.debug("Selected path:  " + self.path)
             except ValueError:
-                log.warning("Invalid path characters")
+                logging.warning("Invalid path characters")
         else:
-            log.warning("Invalid location and project name")
+            logging.warning("Invalid location and project name")
             show_error_message("Invalid location and project name")
             self.path = None
         self.close()
@@ -258,19 +268,19 @@ class SaveProjectWindow(QDialog):
 
 if __name__ == '__main__':
 
+    logging_lvl = config.get_logging_level()
     logging.basicConfig(
-        level=config.get_logging_level(),
+        level=logging.DEBUG,
         format="%(levelname)s %(message)s",
-    #    filename="../console_output.log"
+        # filename="../console_output.log"
     )
 
-    log.info(f"Welcome to ChordSheetWriter log file! Entered proccess at {time.time()}")
+    logging.info(f"Welcome to ChordSheetWriter! Entered proccess at {time.time()}")
 
     app = QApplication(sys.argv)
-    log.debug("Initialized QApplication")
+    logging.debug("Initialized QApplication")
 
     main_window = MainWindow()
-    log.debug("Initialized MainWindow")
+    logging.debug("Initialized MainWindow")
 
     sys.exit(app.exec())
-

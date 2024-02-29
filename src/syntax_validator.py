@@ -1,5 +1,11 @@
-import logging as log
+import logging
 from input_parser import divide_line_into_elements, is_barline
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)s %(message)s",
+    # filename="../console_output.log"
+)
 
 METADATA_LINE = 1
 CHORDS_LINE = 2
@@ -19,25 +25,25 @@ def is_valid(line):
 
     for char in line:
         if ord(char) > 127:
-            log.error(f"'{line}'   Invalid character: '{char}'")
+            logging.error(f"'{line}'   Invalid character: '{char}'")
             return False
 
     if not line_type:
-        log.error(f"'{line}'   Invalid line")
+        logging.error(f"'{line}'   Invalid line")
         return False
 
     if line_type == METADATA_LINE:
 
         split_line = line.split("=")
-        log.debug(split_line)
+        logging.debug(split_line)
         if len(split_line) != 2:
-            log.error(f"'{line}'    Unexpected '='")
+            logging.error(f"'{line}'    Unexpected '='")
             return False
         if split_line[0].strip() not in METADATA_KEYS:
-            log.error(f"'{line}'    Invalid metadata key")
+            logging.error(f"'{line}'    Invalid metadata key")
             return False
         if split_line[1].strip() == "":
-            log.error(f"'{line}'   Metadata value cannot be empty")
+            logging.error(f"'{line}'   Metadata value cannot be empty")
             return False
 
     if line_type == CHORDS_LINE:
@@ -46,35 +52,35 @@ def is_valid(line):
 
         if line[0] == "(":
             if ")" not in line_no_time_signature:
-                log.error(f"'{line}'   No closing bracket in time signature")
+                logging.error(f"'{line}'   No closing bracket in time signature")
                 return False
 
             time_signature = line_no_time_signature[1:line_no_time_signature.find(")")].split("/")
             line_no_time_signature = line_no_time_signature[line_no_time_signature.find(")")+1:]
 
             if line_no_time_signature == "":
-                log.error(f"'{line}'   Empty line")
+                logging.error(f"'{line}'   Empty line")
                 return False
 
             if len(time_signature) == 1:
-                log.error(f"'{line}'   '/' expected in time signature")
+                logging.error(f"'{line}'   '/' expected in time signature")
                 return False
             if len(time_signature) > 2:
-                log.error(f"'{line}'   Unexpected '/' in time signature")
+                logging.error(f"'{line}'   Unexpected '/' in time signature")
                 return False
             for el in time_signature:
                 try:
                     int(el)
                 except ValueError:
-                    log.error(f"'{line}'   Expected a number in time signature, got '{el}'")
+                    logging.error(f"'{line}'   Expected a number in time signature, got '{el}'")
                     return False
 
         if line_no_time_signature[0] not in "[|":
-            log.error(f"'{line}'   No bar line at the beginning of the line")
+            logging.error(f"'{line}'   No bar line at the beginning of the line")
             return False
 
         if line_no_time_signature[-1] not in "]|":
-            log.error(f"'{line}'   No bar line at the end of the line")
+            logging.error(f"'{line}'   No bar line at the end of the line")
             return False
 
         line_elements = divide_line_into_elements(line_no_time_signature)
@@ -83,7 +89,7 @@ def is_valid(line):
             if is_barline(element[0]):
                 if len(element) > 1:
                     if element != "][":
-                        log.error(f"'{line}'   Empty bar: '{element}'")
+                        logging.error(f"'{line}'   Empty bar: '{element}'")
                         return False
     return True
 

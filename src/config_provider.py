@@ -1,10 +1,24 @@
+import os
 import configparser as cp
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)s %(message)s",
+    # filename="../console_output.log"
+)
+logging.debug("Config provider module imported")
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+resources_dir = os.path.join(script_dir, '..', 'resources')
+config_file_path = os.path.join(resources_dir, 'config.ini')
+
 
 
 class ConfigProvider:
     def __init__(self):
         self.config = cp.ConfigParser()
-        self.config.read("../resources/config.ini")
+        self.config.read(config_file_path)
 
     def get(self, section, key):
         return self.config[section][key]
