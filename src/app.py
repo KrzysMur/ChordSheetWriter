@@ -3,14 +3,18 @@ import sys
 import subprocess
 import logging
 
-from tex_generator import TexGenerator
-from input_parser import InputParser
-from syntax_validator import validate_syntax
-from config_provider import config
+from src.tex_generator import TexGenerator
+from src.input_parser import InputParser
+from src.syntax_validator import validate_syntax
+from src.config_provider import config, icons_dir
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtCore import Qt
+
+# pyinstaller --add-data "resources\config.ini;resources"  --add-data "resources\preamble.txt;resources"   --add-data "resources\icons\*;resources\icons" src\app.py
+
+logging.debug(f"Icons folder path: {icons_dir}")
 
 
 def show_error_message(text="ERROR"):
@@ -20,6 +24,7 @@ def show_error_message(text="ERROR"):
     msg.setIcon(QMessageBox.Icon.Information)
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
+
 
 def log_cwd():
     # temporary func for debug and testing; triggered with settings button
@@ -52,35 +57,35 @@ class MainWindow(QMainWindow):
 
         button_size = config.get_toolbar_button_size()
 
-        self.save_button = QPushButton(QIcon("../resources/icons/save.png"), "", self)
+        self.save_button = QPushButton(QIcon(os.path.join(icons_dir, "save.png")), "", self)
         self.save_button.clicked.connect(self.save_project)
         self.save_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.save_button)
 
-        self.load_button = QPushButton(QIcon("../resources/icons/load.png"), "", self)
+        self.load_button = QPushButton(QIcon(os.path.join(icons_dir, "load.png")), "", self)
         self.load_button.setFixedSize(button_size, button_size)
         self.load_button.clicked.connect(self.open_project)
         self.tool_bar.addWidget(self.load_button)
 
-        self.start_button = QPushButton(QIcon("../resources/icons/start.png"), "", self)
+        self.start_button = QPushButton(QIcon(os.path.join(icons_dir, "start.png")), "", self)
         self.start_button.clicked.connect(self.generate_pdf)
         self.start_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.start_button)
 
         self.tool_bar.addSpacing(config.get_toolbar_group_spacing())
 
-        self.undo_button = QPushButton(QIcon("../resources/icons/undo.png"), "", self)
+        self.undo_button = QPushButton(QIcon(os.path.join(icons_dir, "undo.png")), "", self)
         self.undo_button.clicked.connect(self.text_input.undo)
         self.tool_bar.addWidget(self.undo_button)
 
-        self.redo_button = QPushButton(QIcon("../resources/icons/redo.png"), "", self)
+        self.redo_button = QPushButton(QIcon(os.path.join(icons_dir, "redo.png")), "", self)
         self.redo_button.clicked.connect(self.text_input.redo)
         self.redo_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.redo_button)
 
         self.tool_bar.addSpacing(config.get_toolbar_group_spacing())
 
-        self.settings_button = QPushButton(QIcon("../resources/icons/settings.png"), "", self)
+        self.settings_button = QPushButton(QIcon(os.path.join(icons_dir, "settings.png")), "", self)
         self.settings_button.clicked.connect(log_cwd)
         self.settings_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.settings_button)
@@ -209,7 +214,7 @@ class MainWindow(QMainWindow):
             logging.debug("Empty path. Cannot open")
 
 
-if __name__ == '__main__':
+def main():
 
     logging.basicConfig(
         level=logging.DEBUG,
@@ -226,3 +231,7 @@ if __name__ == '__main__':
     logging.debug("Initialized MainWindow")
 
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

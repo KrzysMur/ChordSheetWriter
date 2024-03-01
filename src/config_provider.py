@@ -7,12 +7,13 @@ logging.basicConfig(
     format="%(levelname)s %(message)s",
     # filename="../console_output.log"
 )
-logging.debug("Config provider module imported")
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-resources_dir = os.path.join(script_dir, '..', 'resources')
-config_file_path = os.path.join(resources_dir, 'config.ini')
+script_dir = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
+resources_dir = os.path.normpath(os.path.abspath(os.path.join(script_dir, '..', 'resources')))
+config_file_path = os.path.normpath(os.path.join(resources_dir, 'config.ini'))
+icons_dir = os.path.normpath(os.path.join(resources_dir, "icons"))
 
+logging.debug(f"Config file path: {config_file_path}")
 
 
 class ConfigProvider:
@@ -22,7 +23,6 @@ class ConfigProvider:
 
     def get(self, section, key):
         return self.config[section][key]
-
 
     def get_page_width(self):
         return self.config["page"]["page_width"]

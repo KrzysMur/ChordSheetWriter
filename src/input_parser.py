@@ -1,4 +1,4 @@
-from music_sheet_elements import *
+from src.music_sheet_elements import *
 
 
 class InputParser:

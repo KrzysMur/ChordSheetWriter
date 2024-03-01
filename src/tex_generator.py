@@ -1,6 +1,10 @@
+import os
 import tempfile
-from music_sheet_elements import *
-from config_provider import config
+from src.music_sheet_elements import *
+from src.config_provider import config
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+resources_dir_path = os.path.abspath(os.path.join(current_dir, "..", "resources"))
 
 
 class TexGenerator:
@@ -78,7 +82,7 @@ class TexGenerator:
         return max_bars
 
     def write_preamble_to_file(self):
-        with open("../resources/preamble.txt") as file:
+        with open(os.path.join(resources_dir_path, "preamble.txt")) as file:
             lines = file.readlines()
         for line in lines:
             self.tmp_file.write(line)

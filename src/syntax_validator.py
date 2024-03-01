@@ -1,5 +1,5 @@
 import logging
-from input_parser import divide_line_into_elements, is_barline
+from src.input_parser import divide_line_into_elements, is_barline
 
 logging.basicConfig(
     level=logging.DEBUG,

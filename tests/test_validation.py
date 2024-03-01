@@ -1,8 +1,6 @@
 import sys
 import unittest
 
-sys.path.append("../src")
-
 from src.syntax_validator import *
 
 
