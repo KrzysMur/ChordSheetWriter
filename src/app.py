@@ -12,8 +12,6 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtCore import Qt
 
-# pyinstaller --add-data "resources\config.ini;resources"  --add-data "resources\preamble.txt;resources"   --add-data "resources\icons\*;resources\icons" src\app.py
-
 logging.debug(f"Icons folder path: {icons_dir}")
 
 
@@ -40,6 +38,7 @@ class MainWindow(QMainWindow):
         self.project_directory = None
 
         self.setWindowTitle("ChordSheetWriter")
+        self.setWindowIcon(QIcon(os.path.join(icons_dir, "logo.ico")))
         self.setMinimumSize(config.get_main_window_width(), config.get_main_window_height())
 
         central_widget = QWidget()
@@ -171,6 +170,8 @@ class MainWindow(QMainWindow):
 
             file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Chord Sheet (*.chordsheet)")
             file_path = os.path.normpath(file_path)
+            if file_path == ".":
+                return
 
             self.project_file_path = file_path
             logging.debug(f"Saved project file path: {self.project_file_path}")
