@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self.tool_bar.addSpacing(config.get_toolbar_group_spacing())
 
         self.settings_button = QPushButton(QIcon(os.path.join(icons_dir, "settings.png")), "", self)
-        self.settings_button.clicked.connect(print)
+        self.settings_button.clicked.connect(self.settings_dialog)
         self.settings_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.settings_button)
 
@@ -234,6 +234,52 @@ class MainWindow(QMainWindow):
 
     def input_text_changed(self):
         self.status_label.setText("Unsaved changes")
+
+    def settings_dialog(self):
+        settings_window = SettingsWindow()
+        settings_window.exec()
+
+
+
+class SettingsWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        logging.debug("Initializing SettingsWindow")
+
+        self.setWindowTitle("Settings")
+        self.setWindowIcon(QIcon(os.path.join(icons_dir, "logo.ico")))
+
+        layout = QVBoxLayout()
+
+        # Left margin
+
+        left_margin_layout = QHBoxLayout()
+        left_margin_label = QLabel("Left margin: ")
+        left_margin_slider = QSlider(Qt.Orientation.Horizontal)
+        left_margin_slider.setMinimum(0)
+        left_margin_slider.setMaximum(50)
+        left_margin_slider.setValue(10)
+        left_margin_slider.setTickInterval(1)
+        left_margin_slider.valueChanged.connect(self.set_left_margin_value)
+        self.left_margin_value = QLabel(str(left_margin_slider.value()/10))
+        left_margin_layout.addWidget(left_margin_label)
+        left_margin_layout.addWidget(left_margin_slider)
+        left_margin_layout.addWidget(self.left_margin_value)
+        layout.addLayout(left_margin_layout)
+
+        # Buttons
+
+        button_layout = QHBoxLayout()
+        cancel_btn = QPushButton("Cancel")
+        ok_btn = QPushButton("OK")
+        button_layout.addWidget(cancel_btn)
+        button_layout.addWidget(ok_btn)
+        layout.addLayout(button_layout)
+
+        self.setLayout(layout)
+
+    def set_left_margin_value(self, v):
+        self.left_margin_value.setText(str(v/10))
 
 
 
