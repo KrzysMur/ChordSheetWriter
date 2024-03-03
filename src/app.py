@@ -255,6 +255,7 @@ class SettingsWindow(QDialog):
 
         left_margin_layout = QHBoxLayout()
         left_margin_label = QLabel("Left margin: ")
+        left_margin_label.setFixedWidth(150)
         left_margin_slider = QSlider(Qt.Orientation.Horizontal)
         left_margin_slider.setMinimum(0)
         left_margin_slider.setMaximum(50)
@@ -267,10 +268,79 @@ class SettingsWindow(QDialog):
         left_margin_layout.addWidget(self.left_margin_value)
         layout.addLayout(left_margin_layout)
 
-        # Buttons
+        # Right margin
+
+        right_margin_layout = QHBoxLayout()
+        right_margin_label = QLabel("Right margin: ")
+        right_margin_label.setFixedWidth(150)
+        right_margin_slider = QSlider(Qt.Orientation.Horizontal)
+        right_margin_slider.setMinimum(0)
+        right_margin_slider.setMaximum(50)
+        right_margin_slider.setValue(10)
+        right_margin_slider.setTickInterval(1)
+        right_margin_slider.valueChanged.connect(self.set_right_margin_value)
+        self.right_margin_value = QLabel(str(right_margin_slider.value() / 10))
+        right_margin_layout.addWidget(right_margin_label)
+        right_margin_layout.addWidget(right_margin_slider)
+        right_margin_layout.addWidget(self.right_margin_value)
+        layout.addLayout(right_margin_layout)
+
+        # Top margin
+
+        top_margin_layout = QHBoxLayout()
+        top_margin_label = QLabel("Top margin: ")
+        top_margin_label.setFixedWidth(150)
+        top_margin_slider = QSlider(Qt.Orientation.Horizontal)
+        top_margin_slider.setMinimum(0)
+        top_margin_slider.setMaximum(50)
+        top_margin_slider.setValue(7)
+        top_margin_slider.setTickInterval(1)
+        top_margin_slider.valueChanged.connect(self.set_top_margin_value)
+        self.top_margin_value = QLabel(str(top_margin_slider.value() / 10))
+        top_margin_layout.addWidget(top_margin_label)
+        top_margin_layout.addWidget(top_margin_slider)
+        top_margin_layout.addWidget(self.top_margin_value)
+        layout.addLayout(top_margin_layout)
+
+        # Bottom margin
+
+        bottom_margin_layout = QHBoxLayout()
+        bottom_margin_label = QLabel("Bottom margin: ")
+        bottom_margin_label.setFixedWidth(150)
+        bottom_margin_slider = QSlider(Qt.Orientation.Horizontal)
+        bottom_margin_slider.setMinimum(0)
+        bottom_margin_slider.setMaximum(50)
+        bottom_margin_slider.setValue(5)
+        bottom_margin_slider.setTickInterval(1)
+        bottom_margin_slider.valueChanged.connect(self.set_bottom_margin_value)
+        self.bottom_margin_value = QLabel(str(bottom_margin_slider.value() / 10))
+        bottom_margin_layout.addWidget(bottom_margin_label)
+        bottom_margin_layout.addWidget(bottom_margin_slider)
+        bottom_margin_layout.addWidget(self.bottom_margin_value)
+        layout.addLayout(bottom_margin_layout)
+
+        # Line spacing
+
+        line_spacing_layout = QHBoxLayout()
+        line_spacing_label = QLabel("Line spacing: ")
+        line_spacing_label.setFixedWidth(150)
+        line_spacing_slider = QSlider(Qt.Orientation.Horizontal)
+        line_spacing_slider.setMinimum(5)
+        line_spacing_slider.setMaximum(70)
+        line_spacing_slider.setValue(30)
+        line_spacing_slider.setTickInterval(1)
+        line_spacing_slider.valueChanged.connect(self.set_line_spacing_value)
+        self.line_spacing_value = QLabel(str(line_spacing_slider.value() / 10))
+        line_spacing_layout.addWidget(line_spacing_label)
+        line_spacing_layout.addWidget(line_spacing_slider)
+        line_spacing_layout.addWidget(self.line_spacing_value)
+        layout.addLayout(line_spacing_layout)
+
+        # Button
 
         button_layout = QHBoxLayout()
         cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.close)
         ok_btn = QPushButton("OK")
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(ok_btn)
@@ -281,6 +351,17 @@ class SettingsWindow(QDialog):
     def set_left_margin_value(self, v):
         self.left_margin_value.setText(str(v/10))
 
+    def set_right_margin_value(self, v):
+        self.right_margin_value.setText(str(v/10))
+
+    def set_top_margin_value(self, v):
+        self.top_margin_value.setText(str(v/10))
+
+    def set_bottom_margin_value(self, v):
+        self.bottom_margin_value.setText(str(v/10))
+
+    def set_line_spacing_value(self, v):
+        self.line_spacing_value.setText(str(v/10))
 
 
 def main():
