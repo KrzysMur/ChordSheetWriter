@@ -6,7 +6,7 @@ import logging
 from src.tex_generator import TexGenerator
 from src.input_parser import InputParser
 from src.syntax_validator import validate_syntax
-from src.config_provider import config, icons_dir
+from src.config_provider import config, icons_dir, config_file_path
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
@@ -22,11 +22,6 @@ def show_error_message(text="ERROR"):
     msg.setIcon(QMessageBox.Icon.Information)
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.exec()
-
-
-def log_cwd():
-    # temporary func for debug and testing; triggered with settings button
-    logging.debug(os.getcwd())
 
 
 class MainWindow(QMainWindow):
@@ -48,6 +43,7 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(self.layout)
 
         self.text_input = QTextEdit()
+        self.text_input.textChanged.connect(self.input_text_changed)
 
         # Toolbar section
 
@@ -85,7 +81,7 @@ class MainWindow(QMainWindow):
         self.tool_bar.addSpacing(config.get_toolbar_group_spacing())
 
         self.settings_button = QPushButton(QIcon(os.path.join(icons_dir, "settings.png")), "", self)
-        self.settings_button.clicked.connect(log_cwd)
+        self.settings_button.clicked.connect(print)
         self.settings_button.setFixedSize(button_size, button_size)
         self.tool_bar.addWidget(self.settings_button)
 
@@ -147,6 +143,7 @@ class MainWindow(QMainWindow):
             tex_file.write(tex_generator.tmp_file.read())
         logging.info("Tex file generated")
 
+        self.status_label.setText("Generating PDF...")
         command = f"pdflatex -interaction=nonstopmode -output-directory={self.project_directory} {tex_file_path}"
         err_code = os.system(command)
 
@@ -161,8 +158,10 @@ class MainWindow(QMainWindow):
 
             if os.path.exists(project_path_no_extention+".pdf"):
                 logging.info("Compiled successfully")
+                self.status_label.setText("PDF compiled successfully")
             else:
-                logging.error("Pdf not compiled correctly")
+                logging.error("Pdf did not compile correctly")
+                self.status_label.setText("Something went wrong while compiling PDF")
 
     def save_project(self):
 
@@ -185,9 +184,12 @@ class MainWindow(QMainWindow):
         if self.project_file_path and self.project_name:
 
             with open(self.project_file_path, "w") as file:
-                file.write(self.text_input.toPlainText())
+                with open(config_file_path) as config_file:
+                    file.write(self.text_input.toPlainText() + "\n\n*****CONFIG_SECTION*****\n\n" + config_file.read())
 
             logging.debug("Input content saved to file")
+
+        self.status_label.setText("Project has been saved")
 
     def open_project(self):
         selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
@@ -207,15 +209,37 @@ class MainWindow(QMainWindow):
 
             logging.debug(f"Path to project: {self.project_file_path} Project directory: {self.project_directory}")
 
+            chordsheet_input, config_section = [], []
             with open(selected_file, "r") as file:
-                self.text_input.setText(file.read())
+                lines = file.readlines()
 
+            logging.debug("Read file content")
+
+            i = 0
+            while lines[i] != "*****CONFIG_SECTION*****\n":
+                chordsheet_input.append(lines[i])
+                i += 1
+            config_section = lines[i+1:]
+
+            logging.debug("Extracted file sections")
+
+            with open(config_file_path, "w") as file:
+                file.write("".join(config_section))
+
+            self.text_input.setText("".join(chordsheet_input))
             logging.info("File content opened in editor")
+            self.status_label.setText(f"{self.project_name} has been opened")
         else:
             logging.debug("Empty path. Cannot open")
 
+    def input_text_changed(self):
+        self.status_label.setText("Unsaved changes")
+
+
 
 def main():
+    if os.system("pdflatex --version") != 0:
+        show_error_message("To use this program you have to install MikTex.")
 
     logging.basicConfig(
         level=logging.DEBUG,

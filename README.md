@@ -2,10 +2,14 @@
 # ChordSheetWriter
 Simple and easy to use program to write chord sheets
 
+Download csw.exe from the latest release to use this program.
+
 # Requirements
 
-- Python > 3.10 (3.12 recommended)
 - MikTex
+
+To use source code:
+- Python > 3.10 (3.12 recommended)
 - PyQt6 package in Python environment
 
 # How to write chordsheet?
