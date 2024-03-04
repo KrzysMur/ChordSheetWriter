@@ -184,8 +184,7 @@ class MainWindow(QMainWindow):
         if self.project_file_path and self.project_name:
 
             with open(self.project_file_path, "w") as file:
-                with open(config_file_path) as config_file:
-                    file.write(self.text_input.toPlainText() + "\n\n*****CONFIG_SECTION*****\n\n" + config_file.read())
+                file.write(self.text_input.toPlainText())
 
             logging.debug("Input content saved to file")
 
@@ -209,24 +208,11 @@ class MainWindow(QMainWindow):
 
             logging.debug(f"Path to project: {self.project_file_path} Project directory: {self.project_directory}")
 
-            chordsheet_input, config_section = [], []
             with open(selected_file, "r") as file:
-                lines = file.readlines()
+                chord_sheet_input = file.read()
 
             logging.debug("Read file content")
-
-            i = 0
-            while lines[i] != "*****CONFIG_SECTION*****\n":
-                chordsheet_input.append(lines[i])
-                i += 1
-            config_section = lines[i+1:]
-
-            logging.debug("Extracted file sections")
-
-            with open(config_file_path, "w") as file:
-                file.write("".join(config_section))
-
-            self.text_input.setText("".join(chordsheet_input))
+            self.text_input.setText(chord_sheet_input)
             logging.info("File content opened in editor")
             self.status_label.setText(f"{self.project_name} has been opened")
         else:
@@ -238,12 +224,16 @@ class MainWindow(QMainWindow):
     def settings_dialog(self):
         settings_window = SettingsWindow()
         settings_window.exec()
+        config_to_value = settings_window.config_to_value
+        if config_to_value is None:
+            return
 
 
 
 class SettingsWindow(QDialog):
     def __init__(self):
         super().__init__()
+        self.config_to_value = None
         logging.debug("Initializing SettingsWindow")
 
         self.setWindowTitle("Settings")
@@ -327,7 +317,7 @@ class SettingsWindow(QDialog):
         line_spacing_slider = QSlider(Qt.Orientation.Horizontal)
         line_spacing_slider.setMinimum(5)
         line_spacing_slider.setMaximum(70)
-        line_spacing_slider.setValue(30)
+        line_spacing_slider.setValue(int(config.get_line_spacing())*10)
         line_spacing_slider.setTickInterval(1)
         line_spacing_slider.valueChanged.connect(self.set_line_spacing_value)
         self.line_spacing_value = QLabel(str(line_spacing_slider.value() / 10))
@@ -336,17 +326,30 @@ class SettingsWindow(QDialog):
         line_spacing_layout.addWidget(self.line_spacing_value)
         layout.addLayout(line_spacing_layout)
 
-        # Button
+        # Buttons
 
         button_layout = QHBoxLayout()
         cancel_btn = QPushButton("Cancel")
         cancel_btn.clicked.connect(self.close)
+
         ok_btn = QPushButton("OK")
+        ok_btn.clicked.connect(self.ok_button_pressed)
+
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(ok_btn)
         layout.addLayout(button_layout)
 
         self.setLayout(layout)
+
+    def ok_button_pressed(self):
+        self.config_to_value = {
+            "left_margin": self.left_margin_value.text(),
+            "right_margin": self.right_margin_value.text(),
+            "top_margin": self.top_margin_value.text(),
+            "bottom_margin": self.bottom_margin_value.text(),
+            "line_spacing": self.left_margin_value.text()
+        }
+        self.close()
 
     def set_left_margin_value(self, v):
         self.left_margin_value.setText(str(v/10))

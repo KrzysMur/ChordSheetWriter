@@ -17,9 +17,9 @@ logging.debug(f"Config file path: {config_file_path}")
 
 
 class ConfigProvider:
-    def __init__(self):
+    def __init__(self, config_path):
         self.config = cp.ConfigParser()
-        self.config.read(config_file_path)
+        self.config.read(config_path)
 
     def get(self, section, key):
         return self.config[section][key]
@@ -73,4 +73,4 @@ class ConfigProvider:
         return self.config["dev"]["delete_log_after_successful_pdf_generation"]
 
 
-config = ConfigProvider()
+config = ConfigProvider(config_file_path)
