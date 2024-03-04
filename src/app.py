@@ -13,6 +13,12 @@ from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtCore import Qt
 
 logging.debug(f"Icons folder path: {icons_dir}")
+logging.debug(f"Arguments passed: {sys.argv}")
+
+if len(sys.argv) > 1:
+    project_zip_path = sys.argv[1]
+else:
+    project_zip_path = None
 
 
 def show_error_message(text="ERROR"):
@@ -25,7 +31,7 @@ def show_error_message(text="ERROR"):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, file_to_open=None):
         super().__init__()
 
         self.project_name = None
@@ -104,6 +110,9 @@ class MainWindow(QMainWindow):
 
         generate_pdf_shortcut = QShortcut(QKeySequence(Qt.Key.Key_R | Qt.KeyboardModifier.ControlModifier), self)
         generate_pdf_shortcut.activated.connect(self.generate_pdf)
+
+        if file_to_open is not None:
+            self.open_project(file_to_open)
 
     def generate_pdf(self):
 
@@ -190,9 +199,13 @@ class MainWindow(QMainWindow):
 
         self.status_label.setText("Project has been saved")
 
-    def open_project(self):
-        selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
-                                                       "Chord Sheet Files (*.chordsheet)")
+    def open_project(self, file_to_open=None):
+        print(file_to_open)
+        if file_to_open is not None:
+            selected_file = file_to_open
+        else:
+            selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
+                                                           "Chord Sheet Files (*.chordsheet)")
         logging.debug(f"Selected path to open: {selected_file}")
 
         if selected_file:
@@ -367,7 +380,7 @@ class SettingsWindow(QDialog):
         self.line_spacing_value.setText(str(v/10))
 
 
-def main():
+def main(file_to_open=None):
     if os.system("pdflatex --version") != 0:
         show_error_message("To use this program you have to install MikTex.")
 
@@ -382,11 +395,13 @@ def main():
     app = QApplication(sys.argv)
     logging.debug("Initialized QApplication")
 
-    main_window = MainWindow()
+    logging.info(f"Opening project: {file_to_open}")
+    main_window = MainWindow(file_to_open)
+
     logging.debug("Initialized MainWindow")
 
     sys.exit(app.exec())
 
 
 if __name__ == "__main__":
-    main()
+    main(project_zip_path)
