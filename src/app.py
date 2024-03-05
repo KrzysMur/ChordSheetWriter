@@ -2,12 +2,11 @@ import os
 import sys
 import subprocess
 import logging
-import zipfile
 
 from src.tex_generator import TexGenerator
 from src.input_parser import InputParser
 from src.syntax_validator import validate_syntax
-from src.config_provider import config, icons_dir, config_file_path
+from src.config_provider import config, icons_dir
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
@@ -17,9 +16,9 @@ logging.debug(f"Icons folder path: {icons_dir}")
 logging.debug(f"Arguments passed: {sys.argv}")
 
 if len(sys.argv) > 1:
-    project_zip_path = sys.argv[1]
+    project_path = sys.argv[1]
 else:
-    project_zip_path = None
+    project_path = None
 
 
 def show_error_message(text="ERROR"):
@@ -193,26 +192,25 @@ class MainWindow(QMainWindow):
 
         if self.project_file_path and self.project_name:
 
-            path_to_project_zip = self.project_file_path.split(".")[0] + ".zip"
-            zip_without_extension, _ = os.path.splitext(path_to_project_zip)
+            input_text = self.text_input.toPlainText()
+            number_of_lines = input_text.count("\n") + 1
 
-            with zipfile.ZipFile(path_to_project_zip, "w") as zip_file:
-                with zip_file.open("input.txt", "w") as text_file:
-                    text_file.write(bytes(self.text_input.toPlainText(), "utf-8"))
-                with zip_file.open("config.ini", "w") as text_file:
-                    with open(config_file_path, "r") as cnf_file:
-                        text_file.write(bytes(cnf_file.read(), "utf-8"))
+            with open(self.project_file_path, "w") as file:
+                logging.info("Opened/created project file")
+                file.write(f"{number_of_lines} \n \n")
+
+            with open(self.project_file_path, "a") as file:
+                file.write(f"{input_text}\n\n")
+                try:
+                    config.config.write(file)
+                except Exception as e:
+                    print(e)
 
             logging.debug("Input content saved to file")
 
-            try:
-                os.rename(path_to_project_zip, zip_without_extension+"_.chordsheet")
-            except Exception as e:
-                pass
         self.status_label.setText("Project has been saved")
 
     def open_project(self, file_to_open=None):
-        print(file_to_open)
         if file_to_open is not None:
             selected_file = file_to_open
         else:
@@ -234,10 +232,17 @@ class MainWindow(QMainWindow):
             logging.debug(f"Path to project: {self.project_file_path} Project directory: {self.project_directory}")
 
             with open(selected_file, "r") as file:
-                chord_sheet_input = file.read()
+                chord_sheet_input = file.readlines()
+
+            number_of_chordsheet_lines = int(chord_sheet_input[0].strip())
+            chordsheet = "".join(chord_sheet_input[2:number_of_chordsheet_lines+2])
+            config_section = "".join(chord_sheet_input[number_of_chordsheet_lines+3:])
+
+            config.config.read_string(config_section)
+            logging.debug("Project config saved to config object")
 
             logging.debug("Read file content")
-            self.text_input.setText(chord_sheet_input)
+            self.text_input.setText(chordsheet)
             logging.info("File content opened in editor")
             self.status_label.setText(f"{self.project_name} has been opened")
         else:
@@ -274,7 +279,7 @@ class SettingsWindow(QDialog):
         left_margin_slider = QSlider(Qt.Orientation.Horizontal)
         left_margin_slider.setMinimum(0)
         left_margin_slider.setMaximum(50)
-        left_margin_slider.setValue(10)
+        left_margin_slider.setValue(int(float(config.get_left_margin())*10))
         left_margin_slider.setTickInterval(1)
         left_margin_slider.valueChanged.connect(self.set_left_margin_value)
         self.left_margin_value = QLabel(str(left_margin_slider.value()/10))
@@ -291,7 +296,7 @@ class SettingsWindow(QDialog):
         right_margin_slider = QSlider(Qt.Orientation.Horizontal)
         right_margin_slider.setMinimum(0)
         right_margin_slider.setMaximum(50)
-        right_margin_slider.setValue(10)
+        right_margin_slider.setValue(int(float(config.get_right_margin())*10))
         right_margin_slider.setTickInterval(1)
         right_margin_slider.valueChanged.connect(self.set_right_margin_value)
         self.right_margin_value = QLabel(str(right_margin_slider.value() / 10))
@@ -308,7 +313,7 @@ class SettingsWindow(QDialog):
         top_margin_slider = QSlider(Qt.Orientation.Horizontal)
         top_margin_slider.setMinimum(0)
         top_margin_slider.setMaximum(50)
-        top_margin_slider.setValue(7)
+        top_margin_slider.setValue(int(float(config.get_top_margin())*10))
         top_margin_slider.setTickInterval(1)
         top_margin_slider.valueChanged.connect(self.set_top_margin_value)
         self.top_margin_value = QLabel(str(top_margin_slider.value() / 10))
@@ -325,7 +330,7 @@ class SettingsWindow(QDialog):
         bottom_margin_slider = QSlider(Qt.Orientation.Horizontal)
         bottom_margin_slider.setMinimum(0)
         bottom_margin_slider.setMaximum(50)
-        bottom_margin_slider.setValue(5)
+        bottom_margin_slider.setValue(int(float(config.get_bottom_margin())*10))
         bottom_margin_slider.setTickInterval(1)
         bottom_margin_slider.valueChanged.connect(self.set_bottom_margin_value)
         self.bottom_margin_value = QLabel(str(bottom_margin_slider.value() / 10))
@@ -342,7 +347,7 @@ class SettingsWindow(QDialog):
         line_spacing_slider = QSlider(Qt.Orientation.Horizontal)
         line_spacing_slider.setMinimum(5)
         line_spacing_slider.setMaximum(70)
-        line_spacing_slider.setValue(int(config.get_line_spacing())*10)
+        line_spacing_slider.setValue(int(float(config.get_line_spacing())*10))
         line_spacing_slider.setTickInterval(1)
         line_spacing_slider.valueChanged.connect(self.set_line_spacing_value)
         self.line_spacing_value = QLabel(str(line_spacing_slider.value() / 10))
@@ -416,4 +421,4 @@ def main(file_to_open=None):
 
 
 if __name__ == "__main__":
-    main(project_zip_path)
+    main(project_path)
