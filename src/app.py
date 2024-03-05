@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import logging
+import zipfile
 
 from src.tex_generator import TexGenerator
 from src.input_parser import InputParser
@@ -192,11 +193,22 @@ class MainWindow(QMainWindow):
 
         if self.project_file_path and self.project_name:
 
-            with open(self.project_file_path, "w") as file:
-                file.write(self.text_input.toPlainText())
+            path_to_project_zip = self.project_file_path.split(".")[0] + ".zip"
+            zip_without_extension, _ = os.path.splitext(path_to_project_zip)
+
+            with zipfile.ZipFile(path_to_project_zip, "w") as zip_file:
+                with zip_file.open("input.txt", "w") as text_file:
+                    text_file.write(bytes(self.text_input.toPlainText(), "utf-8"))
+                with zip_file.open("config.ini", "w") as text_file:
+                    with open(config_file_path, "r") as cnf_file:
+                        text_file.write(bytes(cnf_file.read(), "utf-8"))
 
             logging.debug("Input content saved to file")
 
+            try:
+                os.rename(path_to_project_zip, zip_without_extension+"_.chordsheet")
+            except Exception as e:
+                pass
         self.status_label.setText("Project has been saved")
 
     def open_project(self, file_to_open=None):
