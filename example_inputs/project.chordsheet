@@ -26,11 +26,11 @@ capo = 2
 
 [page]
 page_width = 21
-top_margin = 0.7
-left_margin = 1
-right_margin = 1
+top_margin = 3.6
+left_margin = 1.8
+right_margin = 0.0
 bottom_margin = 0.5
-line_spacing = 3
+line_spacing = 1.8
 bar_line_width = 0.5
 bar_line_width_coefficient = 1.2
 
