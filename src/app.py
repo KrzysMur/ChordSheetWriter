@@ -232,11 +232,12 @@ class MainWindow(QMainWindow):
             logging.debug(f"Path to project: {self.project_file_path} Project directory: {self.project_directory}")
 
             with open(selected_file, "r") as file:
-                chord_sheet_input = file.readlines()
+                chord_sheet_input = [line.strip() for line in file.readlines()]
 
-            number_of_chordsheet_lines = int(chord_sheet_input[0].strip())
-            chordsheet = "".join(chord_sheet_input[2:number_of_chordsheet_lines+2])
-            config_section = "".join(chord_sheet_input[number_of_chordsheet_lines+3:])
+            number_of_chordsheet_lines = int(chord_sheet_input[0])
+
+            chordsheet = "\n".join(chord_sheet_input[2:number_of_chordsheet_lines+2])
+            config_section = "\n".join(chord_sheet_input[number_of_chordsheet_lines+2:])
 
             config.config.read_string(config_section)
             logging.debug("Project config saved to config object")

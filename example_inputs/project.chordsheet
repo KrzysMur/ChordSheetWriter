@@ -1,4 +1,5 @@
-
+23 
+ 
 title=Mountain Time
 author=Joe Bonamassa
 album=Out of Time
@@ -18,3 +19,30 @@ capo = 2
 [E_D|E_D|E_D|Bm_C#m_D_Bm]
 [E_D|E_D|E_D|Bm_C#m_D_Bm]
 [E_D|E_D|E_D|Bm_C#m_D_Bm]
+
+
+
+
+
+[page]
+page_width = 21
+top_margin = 0.7
+left_margin = 1
+right_margin = 1
+bottom_margin = 0.5
+line_spacing = 3
+bar_line_width = 0.5
+bar_line_width_coefficient = 1.2
+
+[gui]
+toolbar_button_size = 27
+main_window_width = 500
+main_window_height = 600
+toolbar_group_spacing = 10
+save_window_width = 400
+save_window_height = 160
+
+[dev]
+logging_level = 10
+delete_log_after_successful_pdf_generation = Yes
+
