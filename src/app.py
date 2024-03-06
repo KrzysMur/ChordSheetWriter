@@ -262,6 +262,8 @@ class MainWindow(QMainWindow):
         for k, v in config_to_value.items():
             config.config["page"][k] = v
         logging.info("Settings saved")
+        self.save_project()
+        logging.info("Project saved after editing configuration")
 
 
 class SettingsWindow(QDialog):
@@ -287,6 +289,7 @@ class SettingsWindow(QDialog):
         self.left_margin_slider.setTickInterval(1)
         self.left_margin_slider.valueChanged.connect(self.set_left_margin_value)
         self.left_margin_value = QLineEdit(str(self.left_margin_slider.value()/10))
+        self.left_margin_value.editingFinished.connect(self.update_left_margin_slider)
         self.left_margin_value.setFixedWidth(25)
         left_margin_layout.addWidget(left_margin_label)
         left_margin_layout.addWidget(self.left_margin_slider)
@@ -305,11 +308,13 @@ class SettingsWindow(QDialog):
         self.right_margin_slider.setTickInterval(1)
         self.right_margin_slider.valueChanged.connect(self.set_right_margin_value)
         self.right_margin_value = QLineEdit(str(self.right_margin_slider.value() / 10))
+        self.right_margin_value.editingFinished.connect(self.update_right_margin_slider)
         self.right_margin_value.setFixedWidth(25)
         right_margin_layout.addWidget(right_margin_label)
         right_margin_layout.addWidget(self.right_margin_slider)
         right_margin_layout.addWidget(self.right_margin_value)
         layout.addLayout(right_margin_layout)
+
         # Top margin
 
         top_margin_layout = QHBoxLayout()
@@ -322,6 +327,7 @@ class SettingsWindow(QDialog):
         self.top_margin_slider.setTickInterval(1)
         self.top_margin_slider.valueChanged.connect(self.set_top_margin_value)
         self.top_margin_value = QLineEdit(str(self.top_margin_slider.value() / 10))
+        self.top_margin_value.editingFinished.connect(self.update_top_margin_slider)
         self.top_margin_value.setFixedWidth(25)
         top_margin_layout.addWidget(top_margin_label)
         top_margin_layout.addWidget(self.top_margin_slider)
@@ -340,6 +346,7 @@ class SettingsWindow(QDialog):
         self.bottom_margin_slider.setTickInterval(1)
         self.bottom_margin_slider.valueChanged.connect(self.set_bottom_margin_value)
         self.bottom_margin_value = QLineEdit(str(self.bottom_margin_slider.value() / 10))
+        self.bottom_margin_value.editingFinished.connect(self.update_bottom_margin_slider)
         self.bottom_margin_value.setFixedWidth(25)
         bottom_margin_layout.addWidget(bottom_margin_label)
         bottom_margin_layout.addWidget(self.bottom_margin_slider)
@@ -358,6 +365,7 @@ class SettingsWindow(QDialog):
         self.line_spacing_slider.setTickInterval(1)
         self.line_spacing_slider.valueChanged.connect(self.set_line_spacing_value)
         self.line_spacing_value = QLineEdit(str(self.line_spacing_slider.value() / 10))
+        self.line_spacing_value.editingFinished.connect(self.update_line_spacing_slider)
         self.line_spacing_value.setFixedWidth(25)
         line_spacing_layout.addWidget(line_spacing_label)
         line_spacing_layout.addWidget(self.line_spacing_slider)
@@ -385,7 +393,7 @@ class SettingsWindow(QDialog):
             "right_margin": self.right_margin_value.text(),
             "top_margin": self.top_margin_value.text(),
             "bottom_margin": self.bottom_margin_value.text(),
-            "line_spacing": self.left_margin_value.text()
+            "line_spacing": self.line_spacing_value.text()
         }
         self.close()
 
@@ -403,6 +411,21 @@ class SettingsWindow(QDialog):
 
     def set_line_spacing_value(self, v):
         self.line_spacing_value.setText(str(v/10))
+
+    def update_line_spacing_slider(self):
+        self.line_spacing_slider.setValue(int(float(self.line_spacing_value.text())*10))
+
+    def update_left_margin_slider(self):
+        self.left_margin_slider.setValue(int(float(self.left_margin_value.text())*10))
+
+    def update_right_margin_slider(self):
+        self.right_margin_slider.setValue(int(float(self.right_margin_value.text())*10))
+
+    def update_top_margin_slider(self):
+        self.top_margin_slider.setValue(int(float(self.top_margin_value.text())*10))
+
+    def update_bottom_margin_slider(self):
+        self.bottom_margin_slider.setValue(int(float(self.bottom_margin_value.text())*10))
 
 
 def main(file_to_open=None):
