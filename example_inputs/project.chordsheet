@@ -23,7 +23,7 @@ capo = 2
 
 [page]
 page_width = 21
-top_margin = 3.8
+top_margin = 1.0
 left_margin = 1.0
 right_margin = 1.0
 bottom_margin = 0.5

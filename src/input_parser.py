@@ -5,7 +5,7 @@ class InputParser:
     def __init__(self, _input: list[str]):
         self.input = _input
 
-    def get_metadata(self, return_metadate_ending_index=False):
+    def get_metadata(self):
         metadata = {}
         i = 0
         while "=" in self.input[i]:
@@ -14,14 +14,14 @@ class InputParser:
             i += 1
         if "chords" in metadata:
             metadata.update({"chords": parse_chords(metadata["chords"])})
-        return (fill_in_metadata(metadata), i) if return_metadate_ending_index else fill_in_metadata(metadata)
+        return fill_in_metadata(metadata), i
 
     def parse_song(self, song_starting_index=0):
         song_lines = [self.input[i] for i in range(song_starting_index, len(self.input))]
         return [parse_line(line) for line in song_lines]
 
     def parse(self):
-        metadata, end_index = self.get_metadata(return_metadate_ending_index=True)
+        metadata, end_index = self.get_metadata()
         song = self.parse_song(end_index)
         return metadata, song
 
@@ -66,8 +66,7 @@ def divide_line_into_elements(line):
             line_elements.append(line[i])
     return line_elements
 
+
 def is_barline(char: str):
     return char[0] in "[]|"
-
-
 

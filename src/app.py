@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         self.changes_saved = True
 
     def open_project(self, file_to_open=None):
-        if file_to_open is not None:
+        if file_to_open:
             selected_file = file_to_open
         else:
             selected_file, _ = QFileDialog.getOpenFileName(self, "Select File", "",
