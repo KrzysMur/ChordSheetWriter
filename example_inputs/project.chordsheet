@@ -1,4 +1,4 @@
-23 
+20 
  
 title=Mountain Time
 author=Joe Bonamassa
@@ -21,13 +21,10 @@ capo = 2
 [E_D|E_D|E_D|Bm_C#m_D_Bm]
 
 
-
-
-
 [page]
 page_width = 21
-top_margin = 0.5
-left_margin = 3.0
+top_margin = 3.8
+left_margin = 1.0
 right_margin = 1.0
 bottom_margin = 0.5
 line_spacing = 3.5

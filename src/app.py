@@ -1,12 +1,11 @@
 import os
 import sys
-import subprocess
 import logging
 
 from src.tex_generator import TexGenerator
 from src.input_parser import InputParser
 from src.syntax_validator import validate_syntax
-from src.config_provider import config, icons_dir
+from src.config_provider import config, icons_dir, config_file_path
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
@@ -30,6 +29,15 @@ def show_error_message(text="ERROR"):
     msg.exec()
 
 
+def unsaved_project_popup():
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle("Unsaved changes")
+    msg_box.setText("Do you want to save your changes?")
+    msg_box.setIcon(QMessageBox.Icon.Information)
+    msg_box.setStandardButtons(QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Save)
+    return msg_box.exec()
+
+
 class MainWindow(QMainWindow):
     def __init__(self, file_to_open=None):
         super().__init__()
@@ -38,9 +46,13 @@ class MainWindow(QMainWindow):
         self.project_file_path = None
         self.project_directory = None
 
+        self.changes_saved = False
+
         self.setWindowTitle("ChordSheetWriter")
         self.setWindowIcon(QIcon(os.path.join(icons_dir, "logo.ico")))
         self.setMinimumSize(config.get_main_window_width(), config.get_main_window_height())
+
+        # Initialize main layout
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -57,6 +69,11 @@ class MainWindow(QMainWindow):
         self.tool_bar.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         button_size = config.get_toolbar_button_size()
+
+        self.new_project_button = QPushButton(QIcon(os.path.join(icons_dir, "new_project.png")), "", self)
+        self.new_project_button.clicked.connect(self.open_new_project)
+        self.new_project_button.setFixedSize(button_size, button_size)
+        self.tool_bar.addWidget(self.new_project_button)
 
         self.save_button = QPushButton(QIcon(os.path.join(icons_dir, "save.png")), "", self)
         self.save_button.clicked.connect(self.save_project)
@@ -209,6 +226,7 @@ class MainWindow(QMainWindow):
             logging.debug("Input content saved to file")
 
         self.status_label.setText("Project has been saved")
+        self.changes_saved = True
 
     def open_project(self, file_to_open=None):
         if file_to_open is not None:
@@ -251,10 +269,12 @@ class MainWindow(QMainWindow):
 
     def input_text_changed(self):
         self.status_label.setText("Unsaved changes")
+        self.changes_saved = False
 
     def settings_dialog(self):
         settings_window = SettingsWindow()
         settings_window.exec()
+
         config_to_value = settings_window.config_to_value
         if not config_to_value:
             return
@@ -264,6 +284,21 @@ class MainWindow(QMainWindow):
         logging.info("Settings saved")
         self.save_project()
         logging.info("Project saved after editing configuration")
+
+    def open_new_project(self):
+        if not self.changes_saved:
+            result = unsaved_project_popup()
+            if result == QMessageBox.StandardButton.Save:
+                self.save_project()
+            elif result == QMessageBox.StandardButton.Cancel:
+                return
+
+        logging.info("Opening new project")
+        self.project_name = None
+        self.project_directory = None
+        self.project_file_path = None
+        self.text_input.setText("title =  \nauthor =  \n")
+        config.config.read(config_file_path)
 
 
 class SettingsWindow(QDialog):
@@ -448,7 +483,8 @@ def main(file_to_open=None):
 
     logging.debug("Initialized MainWindow")
 
-    sys.exit(app.exec())
+    app.exec()
+
 
 
 if __name__ == "__main__":
